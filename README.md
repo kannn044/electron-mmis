@@ -3,7 +3,7 @@
 ## Installation
 
 ```
-git clone https://github.com/siteslave/clarity-angular4-electron
+git clone https://github.com/kannn044/electron-mmis
 
 cd clarity-angular4-electron
 
