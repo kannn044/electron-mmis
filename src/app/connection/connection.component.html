@@ -1,0 +1,44 @@
+<div class="row">
+  <div class="col-md-6 offset-md-3">
+    <div class="card">
+      <div class="card-header">
+        Connection Setting
+      </div>
+      <div class="card-block">
+        <div class="card-title">
+          กำหนดค่าการเชื่อมต่อฐานข้อมูล
+        </div>
+        <div class="card-text">
+          <form>
+            <section class="form-block">
+              <div class="form-group">
+                <label for="aForm_1">Host</label>
+                <input type="text" name="dbHost" [(ngModel)]="dbHost" placeholder="localhost" style="width: 100%;">
+              </div>
+              <div class="form-group">
+                <label for="aForm_2">Port</label>
+                <input type="number" name="dbPort" [(ngModel)]="dbPort" placeholder="3306" style="width: 100%;">
+              </div>
+              <div class="form-group">
+                <label for="aForm_2">Database</label>
+                <input type="text" name="dbName" [(ngModel)]="dbName" placeholder="mmis" style="width: 100%;">
+              </div>
+              <div class="form-group">
+                <label for="aForm_2">Username</label>
+                <input type="text" name="dbUser" [(ngModel)]="dbUser" placeholder="root" style="width: 100%;">
+              </div>
+              <div class="form-group">
+                <label for="aForm_2">Password</label>
+                <input type="password" name="dbPassword" [(ngModel)]="dbPassword" placeholder="root" style="width: 100%;">
+              </div>
+            </section>
+          </form>
+        </div>
+      </div>
+      <div class="card-footer">
+        <button class="btn btn-lg btn-success" (click)="saveSetting()" [disabled]="!dbHost || !dbName || !dbPort || !dbUser || !dbPassword">Save</button>
+        <button class="btn btn-lg btn-danger" routerLink="/">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>

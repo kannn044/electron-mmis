@@ -1,0 +1,19 @@
+<clr-main-container>
+  <div class="login-wrapper">
+    <form class="login">
+      <label class="title">
+        <h3 class="welcome">Welcome to</h3>
+        {{hospitalName || 'โรงพยาบาลตัวอย่าง'}}
+      </label>
+      <div class="login-group">
+        <input class="username" [(ngModel)]="username" (keyup)="enterLogin($event)" type="text" 
+        name="login_username" placeholder="Username">
+        <input class="password" [(ngModel)]="password" (keyup)="enterLogin($event)" type="password" 
+        name="login_password" placeholder="Password">
+        <button [disabled]="!username || !password" type="button" class="btn btn-primary" (click)="doLogin()">Signin</button>
+        <a href="javascript://" class="signup" routerLink="/connection">Connection Setting</a>
+      </div>
+    </form>
+  </div>
+
+</clr-main-container>
