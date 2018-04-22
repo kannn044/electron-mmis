@@ -3,6 +3,7 @@ import * as os from 'os';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as fse from 'fs-extra';
+import * as _ from 'lodash';
 
 import { Injectable } from '@angular/core';
 
@@ -11,10 +12,9 @@ export class ConnectionService {
 
   constructor() { }
 
-  createConnection() {
+  createConnection(name: any) {
 
-    let config: any = this.getSetting();
-    
+    const config: any = this.getSetting(name);
     return mysql.createConnection({
       host: config.dbHost,
       user: config.dbUser,
@@ -36,18 +36,18 @@ export class ConnectionService {
 
   }
 
-  getSetting() {
+  getSetting(name: any) {
 
-    let targetDir = path.join(os.homedir(), '.mmis_config');
+    const targetDir = path.join(os.homedir(), '.mmis_config');
     fse.ensureDirSync(targetDir);
 
-    let jsonFile = path.join(targetDir, 'config.json');
+    const jsonFile = path.join(targetDir, name);
 
     try {
-      let config = fse.readJsonSync(jsonFile);
+      const config = fse.readJsonSync(jsonFile);
       return config;
     } catch (error) {
-      let obj: any = {
+      const obj: any = {
         dbHost: 'localhost',
         dbPort: 3306,
         dbName: 'mmis',
@@ -60,4 +60,28 @@ export class ConnectionService {
     }
   }
 
+  async testConnection(dbHost, dbPort, dbUser, dbPassword, dbName) {
+
+    try {
+      const connection = await mysql.createConnection({
+        host: dbHost,
+        user: dbUser,
+        port: dbPort,
+        password: dbPassword,
+        database: dbName,
+        debug: false,
+        acquireConnectionTimeout: 10000
+      });
+      connection.connect();
+      console.log(connection);
+      console.log('connection.state', connection.state);
+      return connection;
+    } catch (error) {
+      console.log(error);
+      return error;
+    }
+
+
+
+  }
 }

@@ -1,3 +1,5 @@
+import { InvsSyncComponent } from './invs-sync/invs-sync.component';
+import { InvsConnectionComponent } from './invs-connection/invs-connection.component';
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { AuthGuard } from '../auth-guard.service';
@@ -14,6 +16,8 @@ const routes: Routes = [
     children: [
       { path: '', redirectTo: 'main', pathMatch: 'full' },
       { path: 'main', component: MainPageComponent },
+      { path: 'invs', component: InvsConnectionComponent },
+      { path: 'invs-sync', component: InvsSyncComponent },
       { path: '**', component: PageNotFoundComponent },
     ]
   }
