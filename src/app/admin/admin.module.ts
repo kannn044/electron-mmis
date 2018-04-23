@@ -13,6 +13,7 @@ import { AlertService } from '../alert.service';
 import { LayoutComponent } from './layout/layout.component';
 import { InvsConnectionComponent } from './invs-connection/invs-connection.component';
 import { InvsSyncComponent } from './invs-sync/invs-sync.component';
+import { ImportExcelComponent } from './import-excel/import-excel.component';
 
 @NgModule({
   imports: [
@@ -23,7 +24,7 @@ import { InvsSyncComponent } from './invs-sync/invs-sync.component';
     ClarityModule,
     AuthModule
   ],
-  declarations: [MainPageComponent, LayoutComponent, InvsConnectionComponent, InvsSyncComponent],
+  declarations: [MainPageComponent, LayoutComponent, InvsConnectionComponent, InvsSyncComponent, ImportExcelComponent],
   providers: [
     MainService,
     AlertService
