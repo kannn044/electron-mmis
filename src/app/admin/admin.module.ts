@@ -11,6 +11,8 @@ import { AuthModule } from '../auth/auth.module';
 import { MainService } from './main.service';
 import { AlertService } from '../alert.service';
 import { LayoutComponent } from './layout/layout.component';
+import { InvsConnectionComponent } from './invs-connection/invs-connection.component';
+import { InvsSyncComponent } from './invs-sync/invs-sync.component';
 
 @NgModule({
   imports: [
@@ -21,7 +23,7 @@ import { LayoutComponent } from './layout/layout.component';
     ClarityModule,
     AuthModule
   ],
-  declarations: [MainPageComponent, LayoutComponent],
+  declarations: [MainPageComponent, LayoutComponent, InvsConnectionComponent, InvsSyncComponent],
   providers: [
     MainService,
     AlertService

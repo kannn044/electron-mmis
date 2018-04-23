@@ -32,7 +32,7 @@ export class ConnectionComponent implements OnInit {
   }
 
   ngOnInit() {
-    let config: any = this.connectionService.getSetting();
+    let config: any = this.connectionService.getSetting('config.json');
     this.zone.run(() => {
       this.dbHost = config.dbHost;
       this.dbPort = +config.dbPort;

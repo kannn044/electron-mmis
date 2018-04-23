@@ -37,7 +37,7 @@ export class LoginPageComponent implements OnInit {
   }
 
   getHospitalName() {
-    let db: IConnection = this.connectionService.createConnection();
+    let db: IConnection = this.connectionService.createConnection('config.json');
     db.connect();
 
     let sql = `select * from sys_settings where action_name='SYS_HOSPITAL'`;
@@ -66,7 +66,7 @@ export class LoginPageComponent implements OnInit {
   }
 
   async doLogin() {
-    let db: IConnection = this.connectionService.createConnection();
+    let db: IConnection = this.connectionService.createConnection('config.json');
     try {
       let rs: any = await this.loginService.doLogin(db, this.username, this.password);
       if (rs.length) {
