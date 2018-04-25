@@ -24,16 +24,16 @@ export class InvsSyncComponent implements OnInit {
     // this.getGenericGroup(dbInv, dbMmis);
 
     // this.getGenerics(dbInv, dbMmis);
+    
     // this.getProducts(dbInv, dbMmis);
     // this.getLabelers(dbInv, dbMmis);
-    this.getPeoples(dbInv, dbMmis);
-    // this.invsService.closeConnection(dbInv);
-    // this.invsService.closeConnection(dbMmis);
-    
+    // this.getPeoples(dbInv, dbMmis);
 
   }
 
   async getUnits(dbInv, dbMmis) {
+    dbInv.connect();
+    dbMmis.connect();
     const unitsRs: any = await this.invsService.getUnits(dbInv);
     const units = [];
     unitsRs.forEach(u => {
@@ -47,9 +47,13 @@ export class InvsSyncComponent implements OnInit {
       units.push(objUnit);
     });
     await this.invsService.insertUnits(dbMmis, units);
+    dbInv.end();
+    dbMmis.end();
   }
 
   async getGenericDosages(dbInv, dbMmis) {
+    dbInv.connect();
+    dbMmis.connect();
     const dosagesRs: any = await this.invsService.getDosages(dbInv);
     const dosages = [];
     dosagesRs.forEach(u => {
@@ -59,9 +63,13 @@ export class InvsSyncComponent implements OnInit {
       dosages.push(objDosages);
     });
     await this.invsService.insertDosages(dbMmis, dosages);
+    dbInv.end();
+    dbMmis.end();
   }
 
   async getGenericHosp(dbInv, dbMmis) {
+    dbInv.connect();
+    dbMmis.connect();
     const genericHospsRs: any = await this.invsService.getGenericHosp(dbInv);
     const genericHosps = [];
     genericHospsRs.forEach(u => {
@@ -72,9 +80,13 @@ export class InvsSyncComponent implements OnInit {
       genericHosps.push(objGenericHosps);
     });
     await this.invsService.insertGenericHosp(dbMmis, genericHosps);
+    dbInv.end();
+    dbMmis.end();
   }
 
   async getGenericGroup(dbInv, dbMmis) {
+    dbInv.connect();
+    dbMmis.connect();
     const genericGroupRs: any = await this.invsService.getGenericGroup(dbInv);
     const genericGroups = [];
     genericGroupRs.forEach(u => {
@@ -85,9 +97,13 @@ export class InvsSyncComponent implements OnInit {
       genericGroups.push(objGenericGroups);
     });
     await this.invsService.insertGenericGroup(dbMmis, genericGroups);
+    dbInv.end();
+    dbMmis.end();
   }
 
   async getGenerics(dbInv, dbMmis) {
+    dbInv.connect();
+    dbMmis.connect();
     const genericRs: any = await this.invsService.getGenerics(dbInv);
     const generics = [];
     genericRs.forEach(v => {
@@ -112,13 +128,17 @@ export class InvsSyncComponent implements OnInit {
     console.log(generics);
 
     // await this.invsService.insertGenerics(dbMmis, generics);
+    dbInv.end();
+    dbMmis.end();
   }
 
   async getProducts(dbInv, dbMmis) {
-    const genericRs: any = await this.invsService.getProducts(dbInv);
-    const generics = [];
-    genericRs.forEach(v => {
-      const objGenerics = {
+    dbInv.connect();
+    dbMmis.connect();
+    const productRs: any = await this.invsService.getProducts(dbInv);
+    const products = [];
+    productRs.forEach(v => {
+      const objProducts = {
         'product_id': v.TRADE_CODE,
         'product_name': v.TRADE_NAME,
         'working_code': v.TRADE_CODE,
@@ -126,15 +146,19 @@ export class InvsSyncComponent implements OnInit {
         'v_labeler_id': v.VENDOR_CODE,
         'reg_no': v.REGIST_NO
       };
-      generics.push(objGenerics);
+      products.push(objProducts);
     });
-    console.log(generics);
+    console.log(products);
 
-    // await this.invsService.insertProducts(dbMmis, dosages);
+    await this.invsService.insertProducts(dbMmis, products);
+    dbInv.end();
+    dbMmis.end();
   }
 
   async getLabelers(dbInv, dbMmis) {
-    const labelerRs: any = await this.invsService.getProducts(dbInv);
+    dbInv.connect();
+    dbMmis.connect();
+    const labelerRs: any = await this.invsService.getLabelers(dbInv);
     const labelers = [];
     labelerRs.forEach(v => {
       const objLabelers = {
@@ -147,9 +171,9 @@ export class InvsSyncComponent implements OnInit {
       };
       labelers.push(objLabelers);
     });
-    console.log(labelers);
-
-    // await this.invsService.insertLabelers(dbMmis, labelers);
+    await this.invsService.insertLabelers(dbMmis, labelers);
+    dbInv.end();
+    dbMmis.end();
   }
 
   async getPeoples(dbInv, dbMmis) {

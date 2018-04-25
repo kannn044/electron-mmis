@@ -6,20 +6,26 @@ export class ImportService {
 
   constructor() { }
 
+  createTmp(db: IConnection) {
+    const sql = `CREATE TABLE tmp_people (id int NOT NULL AUTO_INCREMENT,title_name varchar(255),fname varchar(255),lname varchar(255),position_name varchar(255),PRIMARY KEY(id))`;
+    db.query(sql, function (error, results, fields) {
+      if (error) {
+        throw error;
+      }
+    });
+    return true;
+  }
+
   importPeople(db: IConnection, data: any) {
-    return new Promise((resolve, reject) => {
-      db.query('CREATE TABLE tmp_people (id int NOT NULL AUTO_INCREMENT,title_name varchar(255),fname varchar(255),lname varchar(255),position_name varchar(255),title_id int(10),position_id int(10),PRIMARY KEY (id))');
-
-      let sql = `INSERT INTO tmp_people (title_name,fname,lname,position_name) VALUES ${data}`;
-      db.query(sql, (error: any, results: any) => {
-
+    data.forEach(v => {
+      const sql = `INSERT INTO tmp_people SET ?`;
+      db.query(sql, v, function (error, results, fields) {
         if (error) {
-          reject(error);
-        } else {
-          resolve(results);
-        };
-      })
-    })
+          throw error;
+        }
+      });
+    });
+    return true;
   }
 
   importLabeler(db: IConnection, data: any) {
@@ -39,7 +45,7 @@ export class ImportService {
     })
   }
 
-  selectTempLabeler(db: IConnection) {
+  getTempLabeler(db: IConnection) {
     return new Promise((resolve, reject) => {
       db.query(`SELECT * FROM tmp_labeler`, (error: any, results: any) => {
         resolve(results)
@@ -47,23 +53,23 @@ export class ImportService {
     })
   }
 
-  selectProvince(db: IConnection) {
+  getProvince(db: IConnection) {
     return new Promise((resolve, reject) => {
       db.query(`SELECT * FROM l_province`, (error: any, results: any) => {
         resolve(results)
       })
     })
   }
-  
-  selectAmpur(db: IConnection) {
+
+  getAmpur(db: IConnection) {
     return new Promise((resolve, reject) => {
       db.query(`SELECT * FROM l_ampur`, (error: any, results: any) => {
         resolve(results)
       })
     })
   }
-  
-  selectTambon(db: IConnection) {
+
+  getTambon(db: IConnection) {
     return new Promise((resolve, reject) => {
       db.query(`SELECT * FROM l_tambon`, (error: any, results: any) => {
         resolve(results)
@@ -71,7 +77,7 @@ export class ImportService {
     })
   }
 
-  selectTempPeople(db: IConnection) {
+  getTempPeople(db: IConnection) {
     return new Promise((resolve, reject) => {
       db.query(`SELECT * FROM tmp_people`, (error: any, results: any) => {
         resolve(results)
@@ -79,7 +85,7 @@ export class ImportService {
     })
   }
 
-  selectTitle(db: IConnection) {
+  getTitle(db: IConnection) {
     return new Promise((resolve, reject) => {
       db.query(`SELECT * FROM um_titles`, (error: any, results: any) => {
         resolve(results)
@@ -88,7 +94,7 @@ export class ImportService {
     })
   }
 
-  selectPosition(db: IConnection) {
+  getPosition(db: IConnection) {
     return new Promise((resolve, reject) => {
       db.query(`SELECT * FROM um_positions`, (error: any, results: any) => {
         resolve(results)
@@ -98,15 +104,15 @@ export class ImportService {
   }
 
   insertPeople(db: IConnection, data: any) {
-    return new Promise((resolve, reject) => {
-      let sql = `INSERT INTO um_people (title_id,fname,lname,position_id) VALUES ${data}`;
-
-      db.query(sql, (error: any, results: any) => {
+    data.forEach(v => {
+      const sql = `INSERT INTO um_people SET ?`;
+      db.query(sql, v, function (error, results, fields) {
         if (error) {
-          reject(error);
-        } else resolve(results);
-      })
-    })
+          throw error;
+        }
+      });
+    });
+    return true;
   }
 
   deleteTempPeople(db: IConnection) {
@@ -119,6 +125,15 @@ export class ImportService {
     })
   }
 
+  clearData(db: IConnection) {
+    return new Promise((resolve, reject) => {
+      db.query(`TRUNCATE TABLE um_people`, (error: any, results: any) => {
+        if (error) {
+          reject(error);
+        } else resolve(results);
+      })
+    })
+  }
   dbConnec(db: IConnection) {
     db.connect();
   }
