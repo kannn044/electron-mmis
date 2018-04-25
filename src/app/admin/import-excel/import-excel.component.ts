@@ -1,10 +1,12 @@
+import { browser } from 'protractor';
 import { Component, OnInit } from '@angular/core';
-import { ConnectionService } from '../../connection.service'
+import { ConnectionService } from '../../connection.service';
 import { IConnection } from 'mysql';
 
 import { AlertService } from '../../alert.service';
 import { ImportService } from '../../admin/import.service';
 
+// import xlsx from 'node-xlsx';
 import xlsx from 'node-xlsx';
 
 import * as fs from 'fs';
@@ -25,19 +27,20 @@ export class ImportExcelComponent implements OnInit {
     private alertService: AlertService
   ) { }
 
+
   ngOnInit() {
   }
 
   async importExcel() {
-    let db: IConnection = this.connectionService.createConnection('config.json');
+    const db: IConnection = this.connectionService.createConnection('config.json');
 
-    let targetDir = path.join(os.homedir());
+    const targetDir = path.join(os.homedir());
     const workSheetsFromFile = xlsx.parse(fs.readFileSync(`${targetDir}/template.xlsx`));
 
     for (let x = 0; x < workSheetsFromFile.length; x++) {
-      let excelData = workSheetsFromFile[x].data;
+      const excelData = workSheetsFromFile[x].data;
 
-      let arData = [];
+      const arData = [];
       let text: any = '';
       for (let y = 1; y < excelData.length; y++) {
         if (x === 0) {
@@ -62,30 +65,30 @@ export class ImportExcelComponent implements OnInit {
 
   async signLabeler(db: IConnection, arData: any) {
     this.importService.dbConnec(db);
-    let rs = await this.importService.importLabeler(db, arData);
+    const rs = await this.importService.importLabeler(db, arData);
   }
 
   async signPeople(db: IConnection, arData: any) {
-    let title = [];
-    let position = [];
-    let tmp_people = [];
+    const title = [];
+    const position = [];
+    const tmp_people = [];
 
     this.importService.dbConnec(db);
-    let rs = await this.importService.importPeople(db, arData);
+    const rs = await this.importService.importPeople(db, arData);
     if (rs) {
-      let rsTitle: any = await this.importService.selectTitle(db);
-      let rsPosition: any = await this.importService.selectPosition(db);
-      let rsTmp: any = await this.importService.selectTempPeople(db);
+      const rsTitle: any = await this.importService.selectTitle(db);
+      const rsPosition: any = await this.importService.selectPosition(db);
+      const rsTmp: any = await this.importService.selectTempPeople(db);
 
-      let comma: number = 0;
-      let sqlText: string = '';
+      let comma = 0;
+      let sqlText = '';
 
       rsTmp.forEach(rs => {
         rsTitle.forEach(t => {
-          t.title_name == rs.title_name ? rs.title_id = t.title_id : rs.title_id = rs.title_id;
+          t.title_name === rs.title_name ? rs.title_id = t.title_id : rs.title_id = rs.title_id;
         });
         rsPosition.forEach(p => {
-          p.position_name == rs.position_name ? rs.position_id = p.position_id : rs.position_id = rs.position_id;
+          p.position_name === rs.position_name ? rs.position_id = p.position_id : rs.position_id = rs.position_id;
         });
         comma > 0 ? sqlText += ',' : sqlText += '';
         sqlText += '(\'' + rs.title_id + '\',\'' + rs.fname + '\',\'' + rs.lname + '\',\'' + rs.position_id + '\')';
@@ -99,7 +102,7 @@ export class ImportExcelComponent implements OnInit {
         })
         .catch((error: any) => {
           this.alertService.error();
-        })
+        });
     } else {
       this.alertService.error();
     }

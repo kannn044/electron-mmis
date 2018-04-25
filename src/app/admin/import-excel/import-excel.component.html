@@ -1,1 +1,79 @@
-<button class="btn btn-sm btn-primary" (click)="importExcel()">Import</button>
+<nav class="breadcrumb">
+  <!-- <a class="breadcrumb-item" href="javascript://" routerLink="/admin">หน้าหลัก</a> -->
+  <span class="breadcrumb-item active">นำเข้าข้อมลจาก Excel</span>
+</nav>
+<div class="row">
+  <div class="col-xs-12 col-sm-12 col-md-4 col-lg-4 col-xl-4" style="padding: 1em">
+    <div class="card">
+      <div style="padding: 1em;">
+        <img src="../../../assets/pic/excel.svg" height="50" width="50" style="margin-right:1em "> ดาวโหลดไฟล์ Excel
+        <button style="float: right;" class="btn btn-primary">Download</button>
+      </div>
+    </div>
+  </div>
+  <div class="col-xs-12 col-sm-12 col-md-8 col-lg-8 col-xl-8" style="padding: 1em">
+    <div class="card">
+      <div style="padding: 1em;">
+        <img src="../../../assets/pic/excel.svg" height="50" width="50" style="margin-right:1em "> อัพโหลดไฟล์ Excel
+        <input type="file" style="margin-left:1em ">
+        <button style="float: right;" class="btn btn-success" (click)="importExcel()">Process</button>
+      </div>
+    </div>
+  </div>
+</div>
+<clr-tabs>
+  <clr-tab>
+    <button clrTabLink id="link3">
+      <clr-icon shape="file"></clr-icon>
+      ข้อมูลเจ้าหน้าที่
+    </button>
+    <clr-tab-content id="content3">
+      <div style="padding-top:1em ">
+        <clr-datagrid>
+          <clr-dg-column>people_id</clr-dg-column>
+          <clr-dg-column>title_id</clr-dg-column>
+          <clr-dg-column>fname</clr-dg-column>
+          <clr-dg-column>lname</clr-dg-column>
+          <clr-dg-column>position_id</clr-dg-column>
+          <clr-dg-column>expire</clr-dg-column>
+          <clr-dg-column>lastupdate</clr-dg-column>
+          <clr-dg-row>
+            <clr-dg-cell></clr-dg-cell>
+            <clr-dg-cell></clr-dg-cell>
+            <clr-dg-cell></clr-dg-cell>
+            <clr-dg-cell></clr-dg-cell>
+            <clr-dg-cell></clr-dg-cell>
+            <clr-dg-cell></clr-dg-cell>
+            <clr-dg-cell></clr-dg-cell>
+          </clr-dg-row>
+
+          <clr-dg-footer></clr-dg-footer>
+        </clr-datagrid>
+      </div>
+    </clr-tab-content>
+  </clr-tab>
+  <clr-tab>
+    <button clrTabLink id="link1">
+      <clr-icon shape="file"></clr-icon>
+      ข้อมูลผู้ประกอบการ
+    </button>
+    <clr-tab-content id="content1" *clrIfActive>
+    </clr-tab-content>
+  </clr-tab>
+  <clr-tab>
+    <button clrTabLink id="link2">
+      <clr-icon shape="file"></clr-icon>
+      รายาการยา
+    </button>
+    <clr-tab-content id="content2">
+    </clr-tab-content>
+  </clr-tab>
+  <clr-tab>
+    <button clrTabLink id="link3">
+      <clr-icon shape="file"></clr-icon>
+      คลัง
+    </button>
+    <clr-tab-content id="content3">
+    </clr-tab-content>
+  </clr-tab>
+</clr-tabs>
