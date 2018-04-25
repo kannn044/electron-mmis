@@ -1,4 +1,5 @@
-var mysql = require('mysql');
+const mysql = require('mysql');
+// import * as mysql from 'mysql';
 import * as os from 'os';
 import * as path from 'path';
 import * as fs from 'fs';
@@ -9,7 +10,7 @@ import { Injectable } from '@angular/core';
 
 @Injectable()
 export class ConnectionService {
-
+  success = true;
   constructor() { }
 
   createConnection(name: any) {
@@ -53,7 +54,7 @@ export class ConnectionService {
         dbName: 'mmis',
         dbUser: 'root',
         dbPassword: '123456'
-      }
+      };
 
       fse.writeJsonSync(jsonFile, obj);
       return obj;
@@ -61,9 +62,9 @@ export class ConnectionService {
   }
 
   async testConnection(dbHost, dbPort, dbUser, dbPassword, dbName) {
+    return new Promise((resolve, reject) => {
 
-    try {
-      const connection = await mysql.createConnection({
+      const connection = mysql.createConnection({
         host: dbHost,
         user: dbUser,
         port: dbPort,
@@ -72,16 +73,13 @@ export class ConnectionService {
         debug: false,
         acquireConnectionTimeout: 10000
       });
-      connection.connect();
-      console.log(connection);
-      console.log('connection.state', connection.state);
-      return connection;
-    } catch (error) {
-      console.log(error);
-      return error;
-    }
-
-
-
+      connection.connect(function (err) {
+        if (err) {
+          this.success = false;
+          return resolve(false);
+        }
+        resolve(true);
+      });
+    });
   }
 }

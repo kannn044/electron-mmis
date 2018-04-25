@@ -1,3 +1,30 @@
-<p>
-  <%= dasherize(name) %> works!
-</p>
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <div class="card">
+          <div class="card-header">
+            Sync  ข้อมูลจาก INVS
+          </div>
+          <div class="card-block">
+            <div class="card-title">
+              <!-- เลือกหัวที่ต้องการ Sync -->
+            </div>
+            <div class="card-text">
+            <!-- <div class="row">
+              <div class="col-md-12">
+                  <input type="radio" name="" id=""> หน่วย
+              </div>
+              <div class="col-md-12">
+                  <input type="radio" name="" id=""> หน่วย
+              </div>
+            </div> -->
+            <button class="btn btn-block btn-success" (click)="sync()">Sync ข้อมูล</button>
+            </div>
+          </div>
+          <div class="card-footer">
+            <button class="btn btn-lg btn-success" (click)="saveSetting()" [disabled]="!dbHost || !dbName || !dbPort || !dbUser || !dbPassword || !testConnection || !isSave">Save</button>
+            <button class="btn btn-lg btn-danger" routerLink="/">Cancel</button>
+          </div>
+        </div>
+      </div>
+  
+</div>
