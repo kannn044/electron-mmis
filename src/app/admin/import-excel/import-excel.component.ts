@@ -47,7 +47,7 @@ export class ImportExcelComponent implements OnInit {
 
         if (x === 1) {
           y > 1 ? text += ',' : text += '';
-          text += '(\'' + excelData[y][0] + '\',\'' + excelData[y][1] + '\',\'' + excelData[y][2] + '\',\'' + excelData[y][3] + '\',\'' + excelData[y][4] + '\',\'' + excelData[y][5] + '\',\'' + excelData[y][6] + '\',\'' + excelData[y][7] + '\',\'' + excelData[y][8] + '\',\'' + excelData[y][9] + '\')';
+          text += '(\'' + excelData[y][0] + '\',\'' + excelData[y][1] + '\',\'' + excelData[y][2] + '\',\'' + excelData[y][9] + '\',1,\'' + excelData[y][3] + '\',\'' + excelData[y][4] + '\',\'' + excelData[y][5] + '\',\'' + excelData[y][6] + '\',\'' + excelData[y][7] + '\',\'' + excelData[y][8] + '\')';
         }
       }
       arData.push(text);
@@ -63,13 +63,45 @@ export class ImportExcelComponent implements OnInit {
   async signLabeler(db: IConnection, arData: any) {
     this.importService.dbConnec(db);
     let rs = await this.importService.importLabeler(db, arData);
+
+    if (rs) {
+      let rsProvince: any = await this.importService.selectProvince(db);
+      let rsAmpur: any = await this.importService.selectAmpur(db);
+      let rsTambon: any = await this.importService.selectTambon(db);
+      let rsTmp: any = await this.importService.selectTempLabeler(db);
+
+      let comma: number = 0;
+      let sqlText: string = '';
+      
+      rsTmp.forEach(rs => {
+        rsProvince.forEach(v => {
+          v.province_code == rs.province_name ? rs.province_name = v.province_name : rs.province_name = v.province_name;
+        });
+        // rsAmpur.forEach(v => {
+        //   p.position_name == rs.position_name ? rs.position_id = p.position_id : rs.position_id = rs.position_id;
+        // });
+        // rsTambon.forEach(v => {
+        //   p.position_name == rs.position_name ? rs.position_id = p.position_id : rs.position_id = rs.position_id;
+        // });
+        // comma > 0 ? sqlText += ',' : sqlText += '';
+        // sqlText += '(\'' + rs.title_id + '\',\'' + rs.fname + '\',\'' + rs.lname + '\',\'' + rs.position_id + '\')';
+        // comma++;
+      });
+      // this.importService.insertPeople(db, sqlText)
+      //   .then((results: any) => {
+      //     this.importService.deleteTempPeople(db);
+      //     this.importService.dbClose(db);
+      //     this.alertService.success();
+      //   })
+      //   .catch((error: any) => {
+      //     this.alertService.error();
+      //   })
+    } else {
+      this.alertService.error();
+    }
   }
 
-  async signPeople(db: IConnection, arData: any) {
-    let title = [];
-    let position = [];
-    let tmp_people = [];
-
+  async signPeople(db: IConnection, arData: any) { 
     this.importService.dbConnec(db);
     let rs = await this.importService.importPeople(db, arData);
     if (rs) {
