@@ -13,13 +13,8 @@ import { AlertService } from '../alert.service';
 import { LayoutComponent } from './layout/layout.component';
 import { InvsConnectionComponent } from './invs-connection/invs-connection.component';
 import { InvsSyncComponent } from './invs-sync/invs-sync.component';
-<<<<<<< HEAD
-import { InvsService } from './invs.service';
-import { ImportExcelComponent } from './import-excel/import-excel.component';
-=======
 import { ImportExcelComponent } from './import-excel/import-excel.component';
 import { InvsService } from './invs.service';
->>>>>>> 5e7b8092aa54d245d1d5e308b42547333942b068
 
 @NgModule({
   imports: [
