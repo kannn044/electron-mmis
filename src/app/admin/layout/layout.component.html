@@ -7,10 +7,10 @@
       </a>
     </div>
     <div class="header-nav">
-      <a class=" nav-link nav-icon" routerLink='/admin/main' routerLinkActive='active'>
+      <!-- <a class=" nav-link nav-icon" routerLink='/admin/main' routerLinkActive='active'>
         <clr-icon shape="home"></clr-icon>
-      </a>
-      <a class=" nav-link nav-icon" routerLink='/admin/invs' routerLinkActive='active'>
+      </a> -->
+      <!-- <a class=" nav-link nav-icon" routerLink='/admin/invs' routerLinkActive='active'>
         <clr-icon shape="group"></clr-icon>
       </a>
       <a class=" nav-link nav-icon" routerLink='/admin/generice-medicine' routerLinkActive='active'>
@@ -21,22 +21,22 @@
       </a>
       <a class=" nav-link nav-icon" routerLink='/admin/packages' routerLinkActive='active'>
         <clr-icon shape="archive"></clr-icon>
-      </a>
+      </a> -->
     </div>
     <div class="header-actions">
-        <clr-dropdown class="dropdown bottom-right">
-            <button class="nav-text" clrDropdownToggle>
-                {{ fullname }}
-                <clr-icon shape="caret down"></clr-icon>
-            </button>
-            <div class="dropdown-menu">
-                <a href="javascript://" clrDropdownItem>Preferences</a>
-                <a (click)="logout()" clrDropdownItem>Log out</a>
-            </div>
-        </clr-dropdown>
+      <clr-dropdown class="dropdown bottom-right">
+        <button class="nav-text" clrDropdownToggle>
+          {{ fullname }}
+          <clr-icon shape="caret down"></clr-icon>
+        </button>
+        <div class="dropdown-menu">
+          <a href="javascript://" clrDropdownItem>Preferences</a>
+          <a (click)="logout()" clrDropdownItem>Log out</a>
+        </div>
+      </clr-dropdown>
     </div>
   </clr-header>
-  <nav class="subnav" [clr-nav-level]="2">
+  <!-- <nav class="subnav" [clr-nav-level]="2">
     <ul class="nav">
       <li class="nav-item">
         <a class="nav-link" href="javascript://" 
@@ -51,18 +51,30 @@
         routerLink='/admin/generice-medicine-supplier' routerLinkActive='active'>ข้อมูลเวชภัณฑ์ไม่ใช่ยา</a>
       </li>
     </ul>
-  </nav>
+  </nav> -->
 
   <div class="content-container">
     <div class="content-area">
       <router-outlet></router-outlet>
     </div>
-
-    <nav class="sidenav" [clr-nav-level]="1">
-      <section class="sidenav-content">
-
-      </section>
-    </nav>
+    <clr-vertical-nav class="is-collapsed" [clrVerticalNavCollapsible]="collapsible" [(clrVerticalNavCollapsed)]="collapse">
+      <a clrVerticalNavLink routerLink='/admin/import-excel' title="นำเข้าข้อมูลจาก Excel" routerLinkActive="active">
+        <clr-icon shape="import"></clr-icon>
+        นำเข้าข้อมูลจาก Excel
+      </a>
+      <a clrVerticalNavLink routerLink='/admin/invs' title="นำเข้าข้อมูลจาก INVS" routerLinkActive="active">
+        <clr-icon shape="import"></clr-icon>
+        นำเข้าข้อมูลจาก INVS
+      </a>
+      <a clrVerticalNavLink routerLink='/admin/invs-sync' title="นำเข้าข้อมูลจาก INVC" routerLinkActive="active">
+        <clr-icon shape="import"></clr-icon>
+        นำเข้าข้อมูลจาก INVC
+      </a>
+      <a clrVerticalNavLink routerLink='/admin/invs' title="นำเข้าข้อมูลจาก INVDos" routerLinkActive="active">
+        <clr-icon shape="import"></clr-icon>
+        นำเข้าข้อมูลจาก INVDos
+      </a>
+    </clr-vertical-nav>
 
   </div>
 

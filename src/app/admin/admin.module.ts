@@ -13,7 +13,11 @@ import { AlertService } from '../alert.service';
 import { LayoutComponent } from './layout/layout.component';
 import { InvsConnectionComponent } from './invs-connection/invs-connection.component';
 import { InvsSyncComponent } from './invs-sync/invs-sync.component';
+<<<<<<< HEAD
 import { InvsService } from './invs.service';
+=======
+import { ImportExcelComponent } from './import-excel/import-excel.component';
+>>>>>>> c178588afbfcf74650a937eaf3c18f1fcc2dc874
 
 @NgModule({
   imports: [
@@ -24,7 +28,7 @@ import { InvsService } from './invs.service';
     ClarityModule,
     AuthModule
   ],
-  declarations: [MainPageComponent, LayoutComponent, InvsConnectionComponent, InvsSyncComponent],
+  declarations: [MainPageComponent, LayoutComponent, InvsConnectionComponent, InvsSyncComponent, ImportExcelComponent],
   providers: [
     MainService,
     AlertService,
