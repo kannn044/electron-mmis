@@ -6,7 +6,6 @@ import { IConnection } from 'mysql';
 import { AlertService } from '../../alert.service';
 import { ImportService } from '../../admin/import.service';
 
-// import xlsx from 'node-xlsx';
 import xlsx from 'node-xlsx';
 
 import * as fs from 'fs';
