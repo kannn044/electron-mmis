@@ -22,6 +22,7 @@ import '@clr/icons/shapes/all-shapes';
 import { ConnectionService } from './connection.service';
 import { ConnectionComponent } from './connection/connection.component';
 import { LoginService } from './login.service';
+import { ImportService } from './admin/import.service';
 
 @NgModule({
   declarations: [
@@ -44,6 +45,7 @@ import { LoginService } from './login.service';
     AlertService,
     LoginService,
     ConnectionService,
+    ImportService,
     { provide: 'API_URL', useValue: environment.apiUrl },
     { provide: LocationStrategy, useClass: HashLocationStrategy }
   ],
