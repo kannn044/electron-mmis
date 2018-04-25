@@ -1,3 +1,4 @@
+import { browser } from 'protractor';
 import { Component, OnInit } from '@angular/core';
 
 @Component({
@@ -9,7 +10,12 @@ export class ImportExcelComponent implements OnInit {
 
   constructor() { }
 
+
   ngOnInit() {
+  }
+
+  Process() {
+
   }
 
 }
