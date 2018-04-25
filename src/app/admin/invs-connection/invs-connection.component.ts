@@ -21,6 +21,7 @@ export class InvsConnectionComponent implements OnInit {
   dbUser: any;
   dbPassword: any;
   testConnection = false;
+  isSave = false;
   constructor(
     private alertService: AlertService,
     private zone: NgZone,
@@ -68,18 +69,25 @@ export class InvsConnectionComponent implements OnInit {
   }
 
   async testConnections() {
-    // this.testConnection = true;
-
+    this.testConnection = true;
     const conn: any = await this.connectionService.testConnection(this.dbHost, this.dbPort, this.dbUser, this.dbPassword, this.dbName);
     // await conn.connect();
     // console.log(conn);
-    // if (conn.state === 'disconnected') {
-    //   this.testConnection = false;
-    //   // this.alertService.error('เชื่อมต่อฐานข้อมูลผิดพลาด');
-    // } else if (conn.state === 'authenticated') {
-    //   console.log('success');
-    // }
+    console.log(conn);
+    
+    if (!conn) {
+      this.testConnection = false;
+      this.alertService.error('เชื่อมต่อฐานข้อมูลผิดพลาด');
+      this.isSave = false;
+    } else if (conn) {
+      this.isSave = true;
+      // console.log('success');
+    }
     // console.log(conn.state);
     // console.log(conn.threadId);
+  }
+  reTest() {
+    this.testConnection = false;
+    this.isSave = false;
   }
 }
