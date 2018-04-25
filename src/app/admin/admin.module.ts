@@ -13,6 +13,7 @@ import { AlertService } from '../alert.service';
 import { LayoutComponent } from './layout/layout.component';
 import { InvsConnectionComponent } from './invs-connection/invs-connection.component';
 import { InvsSyncComponent } from './invs-sync/invs-sync.component';
+import { InvsService } from './invs.service';
 
 @NgModule({
   imports: [
@@ -26,7 +27,8 @@ import { InvsSyncComponent } from './invs-sync/invs-sync.component';
   declarations: [MainPageComponent, LayoutComponent, InvsConnectionComponent, InvsSyncComponent],
   providers: [
     MainService,
-    AlertService
+    AlertService,
+    InvsService
   ]
 })
 export class AdminModule { }
