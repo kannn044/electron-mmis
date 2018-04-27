@@ -243,7 +243,7 @@ button.confirm {
     color: white;
 }
 
-wm-loading-modal .modal-backdrop {
+app-loading-modal .modal-backdrop {
     position: fixed;
     top: 0;
     bottom: 0;
