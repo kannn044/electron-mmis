@@ -29,7 +29,10 @@ export class ImportExcelComponent implements OnInit {
   ) { }
 
   peopleRs: any;
+  titleRs: any;
+  positionRs: any;
   openModal_people = false;
+  peopleEdit = {};
 
   ngOnInit() {
     this.getpeople();
@@ -200,17 +203,36 @@ export class ImportExcelComponent implements OnInit {
     await this.importService.clearDataGenerics(db);
   }
 
-  async close() {
+  closeModal() {
     this.openModal_people = false;
   }
 
   async getpeople() {
     const db: IConnection = this.connectionService.createConnection('config.json');
-    this.peopleRs = await this.importService.getpeople(db);
+    this.peopleRs = await this.importService.getPeople(db);
   }
 
-  async onEdit(item) {
-    console.log(item.people_id);
+  async onEditPeople(item) {
+    const db: IConnection = this.connectionService.createConnection('config.json');
+    this.titleRs = await this.importService.getTitle(db);
+    this.positionRs = await this.importService.getPosition(db);
+    console.log(item);
+    this.peopleEdit = {
+      'people_id': item.people_id,
+      'title_id': item.title_id,
+      'fname': item.fname,
+      'lname': item.lname,
+      'position_id': item.position_id
+    };
     this.openModal_people = true;
+  }
+
+  async confirmEditPeople() {
+    console.log(this.peopleEdit);
+    const db: IConnection = this.connectionService.createConnection('config.json');
+    await this.importService.updatePeople(db, this.peopleEdit);
+    this.closeModal();
+    this.alertService.success();
+    this.getpeople();
   }
 }
