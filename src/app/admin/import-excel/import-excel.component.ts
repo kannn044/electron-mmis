@@ -1,5 +1,5 @@
 import { browser } from 'protractor';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { ConnectionService } from '../../connection.service';
 import { IConnection } from 'mysql';
 
@@ -21,6 +21,7 @@ import * as os from 'os';
 })
 export class ImportExcelComponent implements OnInit {
 
+  @ViewChild('modalLoading') public modalLoading: any;
   constructor(
     private connectionService: ConnectionService,
     private importService: ImportService,
@@ -40,7 +41,7 @@ export class ImportExcelComponent implements OnInit {
 
     const targetDir = path.join(os.homedir());
     const workSheetsFromFile = xlsx.parse(fs.readFileSync(`${targetDir}/template.xlsx`));
-
+    
     for (let x = 0; x < workSheetsFromFile.length; x++) {
       const excelData = workSheetsFromFile[x].data;
 
@@ -52,7 +53,7 @@ export class ImportExcelComponent implements OnInit {
             'fname': excelData[y][1],
             'lname': excelData[y][2],
             'position_name': excelData[y][3]
-          }
+          };
           arData.push(obj);
         }
 
@@ -62,14 +63,14 @@ export class ImportExcelComponent implements OnInit {
             'description': excelData[y][1],
             'nin': excelData[y][2],
             'address': excelData[y][3],
-            'tambon_code': excelData[y][4].split(" "),
-            'ampur_code': excelData[y][5].split(" "),
-            'province_code': excelData[y][6].split(" "),
+            'tambon_code': excelData[y][4].split(' '),
+            'ampur_code': excelData[y][5].split(' '),
+            'province_code': excelData[y][6].split(' '),
             'zipcode': excelData[y][7],
             'phone': excelData[y][8],
             'labeler_type': excelData[y][9],
             'labeler_status': '1'
-          }
+          };
           arData.push(obj);
         }
 
@@ -81,7 +82,7 @@ export class ImportExcelComponent implements OnInit {
             'short_code': excelData[y][2],
             'his_hospcode': excelData[y][3],
             'his_dep_code': excelData[y][4],
-          }
+          };
           arData.push(obj);
         }
 
@@ -93,14 +94,14 @@ export class ImportExcelComponent implements OnInit {
             'short_code': excelData[y][2],
             'his_hospcode': excelData[y][3],
             'his_dep_code': excelData[y][4],
-          }
+          };
           arData.push(obj);
         }
       }
-      // if (x === 0) await this.signPeople(db, arData);
-      // if (x === 1) await this.signLabeler(db, arData);
-      // if (x === 2) await this.signWareHouses(db, arData);
-      if (x === 3) await this.signWareHouses(db, arData);
+      if (x === 0) await this.signPeople(db, arData);
+      if (x === 1) await this.signLabeler(db, arData);
+      if (x === 2) await this.signWareHouses(db, arData);
+      // if (x === 3) await this.signWareHouses(db, arData);
     }
     this.alertService.success();
     this.getpeople();
@@ -191,7 +192,7 @@ export class ImportExcelComponent implements OnInit {
     await this.importService.clearDataWareHouse(db);
     const importData: any = await this.importService.importWareHouses(db, arData);
 
-    if (!importData) this.alertService.error();
+    if (!importData) { this.alertService.error(); }
   }
 
   async signGenerics(db: IConnection, arData: any) {

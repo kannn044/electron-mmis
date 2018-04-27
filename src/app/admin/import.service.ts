@@ -195,7 +195,7 @@ export class ImportService {
       db.query(`TRUNCATE TABLE wm_warehouses`, (error: any, results: any) => {
         if (error) {
           reject(error);
-        } else resolve(results);
+        } else { resolve(results); }
       });
     });
   }
@@ -205,7 +205,7 @@ export class ImportService {
       db.query(`TRUNCATE TABLE mm_generics`, (error: any, results: any) => {
         if (error) {
           reject(error);
-        } else resolve(results);
+        } else { resolve(results); }
       });
     });
   }
