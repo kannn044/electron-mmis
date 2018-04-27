@@ -27,8 +27,11 @@ export class ImportExcelComponent implements OnInit {
     private alertService: AlertService
   ) { }
 
+  peopleRs: any;
+  openModal_people = false;
 
   ngOnInit() {
+    this.getpeople();
   }
 
   async importExcel() {
@@ -94,12 +97,13 @@ export class ImportExcelComponent implements OnInit {
           arData.push(obj);
         }
       }
-      // if (x === 0) await this.signPeople(db, arData);
-      // if (x === 1) await this.signLabeler(db, arData);
-      // if (x === 2) await this.signWareHouses(db, arData);
-      if (x === 3) await this.signWareHouses(db, arData);
+      if (x === 0) await this.signPeople(db, arData);
+      if (x === 1) await this.signLabeler(db, arData);
+      if (x === 2) await this.signWareHouses(db, arData);
+      // if (x === 3) await this.signWareHouses(db, arData);
     }
     this.alertService.success();
+    this.getpeople();
     db.end();
   }
 
@@ -192,5 +196,19 @@ export class ImportExcelComponent implements OnInit {
 
   async signGenerics(db: IConnection, arData: any) {
     await this.importService.clearDataGenerics(db);
+  }
+
+  async close() {
+    this.openModal_people = false;
+  }
+
+  async getpeople() {
+    const db: IConnection = this.connectionService.createConnection('config.json');
+    this.peopleRs = await this.importService.getpeople(db);
+  }
+
+  async onEdit(item) {
+    console.log(item.people_id);
+    this.openModal_people = true;
   }
 }
