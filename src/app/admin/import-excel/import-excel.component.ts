@@ -97,10 +97,10 @@ export class ImportExcelComponent implements OnInit {
           arData.push(obj);
         }
       }
-      if (x === 0) await this.signPeople(db, arData);
-      if (x === 1) await this.signLabeler(db, arData);
-      if (x === 2) await this.signWareHouses(db, arData);
-      // if (x === 3) await this.signWareHouses(db, arData);
+      // if (x === 0) await this.signPeople(db, arData);
+      // if (x === 1) await this.signLabeler(db, arData);
+      // if (x === 2) await this.signWareHouses(db, arData);
+      if (x === 3) await this.signWareHouses(db, arData);
     }
     this.alertService.success();
     this.getpeople();
@@ -196,6 +196,7 @@ export class ImportExcelComponent implements OnInit {
 
   async signGenerics(db: IConnection, arData: any) {
     await this.importService.clearDataGenerics(db);
+    console.log(arData);
   }
 
   async close() {
