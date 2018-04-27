@@ -94,6 +94,23 @@ export class ImportService {
     })
   }
 
+  getpeople(db: IConnection) {
+    return new Promise((resolve, reject) => {
+      db.query(`SELECT
+      up.people_id,
+      ut.title_name,
+      up.fname,
+      up.lname,
+      upp.position_name
+    FROM
+      um_people up
+    JOIN um_titles ut ON ut.title_id = up.title_id
+    JOIN um_positions upp ON upp.position_id = up.position_id`, (error: any, results: any) => {
+        resolve(results);
+      });
+    });
+  }
+
   getPosition(db: IConnection) {
     return new Promise((resolve, reject) => {
       db.query(`SELECT * FROM um_positions`, (error: any, results: any) => {

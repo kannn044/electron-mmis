@@ -30,24 +30,27 @@
     <clr-tab-content id="content3">
       <div style="padding-top:1em ">
         <clr-datagrid>
-          <clr-dg-column>people_id</clr-dg-column>
-          <clr-dg-column>title_id</clr-dg-column>
-          <clr-dg-column>fname</clr-dg-column>
-          <clr-dg-column>lname</clr-dg-column>
-          <clr-dg-column>position_id</clr-dg-column>
-          <clr-dg-column>expire</clr-dg-column>
-          <clr-dg-column>lastupdate</clr-dg-column>
-          <clr-dg-row>
-            <clr-dg-cell></clr-dg-cell>
-            <clr-dg-cell></clr-dg-cell>
-            <clr-dg-cell></clr-dg-cell>
-            <clr-dg-cell></clr-dg-cell>
-            <clr-dg-cell></clr-dg-cell>
-            <clr-dg-cell></clr-dg-cell>
-            <clr-dg-cell></clr-dg-cell>
+          <clr-dg-column>คำนำหน้า</clr-dg-column>
+          <clr-dg-column>ชื่อ</clr-dg-column>
+          <clr-dg-column>นามสกุล</clr-dg-column>
+          <clr-dg-column>ตำแหน่ง</clr-dg-column>
+          <clr-dg-column></clr-dg-column>
+          <clr-dg-row *clrDgItems="let item of peopleRs" [clrDgItem]="item">
+            <clr-dg-cell>{{item.title_name}}</clr-dg-cell>
+            <clr-dg-cell>{{item.fname}}</clr-dg-cell>
+            <clr-dg-cell>{{item.lname}}</clr-dg-cell>
+            <clr-dg-cell>{{item.position_name}}</clr-dg-cell>
+            <clr-dg-cell>
+              <div class="btn-group btn-sm">
+                <button class="btn btn-outline-primary" (click)="onEdit(item)">Edit</button>
+              </div>
+            </clr-dg-cell>
           </clr-dg-row>
 
-          <clr-dg-footer></clr-dg-footer>
+          <clr-dg-footer>
+            {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} of {{pagination.totalItems}} คน
+            <clr-dg-pagination #pagination [clrDgPageSize]="50"></clr-dg-pagination>
+          </clr-dg-footer>
         </clr-datagrid>
       </div>
     </clr-tab-content>
@@ -77,3 +80,14 @@
     </clr-tab-content>
   </clr-tab>
 </clr-tabs>
+<!-- Modal tab ข้อมูลเจ้าหน้าที่ -->
+<clr-modal [(clrModalOpen)]="openModal_people">
+  <h3 class="modal-title">I have a nice title</h3>
+  <div class="modal-body">
+    <p>But not much to say...</p>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline" (click)="close()">Cancel</button>
+    <button type="button" class="btn btn-primary" (click)="basic = false">Ok</button>
+  </div>
+</clr-modal>
