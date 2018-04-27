@@ -242,3 +242,14 @@ button.confirm {
     border-color: #EDB200;
     color: white;
 }
+
+wm-loading-modal .modal-backdrop {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    background-color: transparent;
+    opacity: .85;
+    z-index: 1040;
+}
