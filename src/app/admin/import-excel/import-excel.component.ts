@@ -34,13 +34,13 @@ export class ImportExcelComponent implements OnInit {
   async importExcel() {
     const db: IConnection = this.connectionService.createConnection('config.json');
     db.connect();
-    
+
     const targetDir = path.join(os.homedir());
     const workSheetsFromFile = xlsx.parse(fs.readFileSync(`${targetDir}/template.xlsx`));
 
     for (let x = 0; x < workSheetsFromFile.length; x++) {
       const excelData = workSheetsFromFile[x].data;
-      
+
       const arData: any = [];
       for (let y = 1; y < excelData.length; y++) {
         if (x === 0) {
@@ -81,10 +81,23 @@ export class ImportExcelComponent implements OnInit {
           }
           arData.push(obj);
         }
+
+        if (x === 3) {
+          const obj = {
+            'warehouse_id': excelData[y][0],
+            'warehouse_name': excelData[y][1],
+            'location': excelData[y][2],
+            'short_code': excelData[y][2],
+            'his_hospcode': excelData[y][3],
+            'his_dep_code': excelData[y][4],
+          }
+          arData.push(obj);
+        }
       }
       // if (x === 0) await this.signPeople(db, arData);
       // if (x === 1) await this.signLabeler(db, arData);
-      if (x === 2) await this.signWareHouses(db, arData);
+      // if (x === 2) await this.signWareHouses(db, arData);
+      if (x === 3) await this.signWareHouses(db, arData);
     }
     this.alertService.success();
     db.end();
@@ -94,7 +107,7 @@ export class ImportExcelComponent implements OnInit {
     await this.importService.createTmpLabeler(db);
     await this.importService.clearDataLabeler(db);
     const importData: any = await this.importService.importLabeler(db, arData);
-    
+
     if (importData) {
       const labelerRs: any = await this.importService.getTempLabeler(db);
       const tambonRs: any = await this.importService.getTambon(db);
@@ -104,13 +117,13 @@ export class ImportExcelComponent implements OnInit {
       labelerRs.forEach(v => {
         const idxTcode = _.findIndex(tambonRs, { 'tambon_name': v.tambon_code });
         const tambon_code = idxTcode > -1 ? tambonRs[idxTcode].tambon_code : null;
-        
+
         const idxAcode = _.findIndex(ampurRs, { 'ampur_name': v.ampur_code });
         const ampur_code = idxAcode > -1 ? ampurRs[idxAcode].ampur_code : null;
-        
+
         const idxPcode = _.findIndex(provinceRs, { 'province_name': v.province_code });
         const province_code = idxPcode > -1 ? provinceRs[idxPcode].province_code : null;
-        
+
         const objLabeler = {
           'labeler_name': v.labeler_name,
           'description': v.description,
@@ -129,19 +142,19 @@ export class ImportExcelComponent implements OnInit {
         };
         labeler.push(objLabeler);
       });
-      
+
       await this.importService.insertLabeler(db, labeler);
       await this.importService.deleteTempLabeler(db);
     } else {
       this.alertService.error();
     }
   }
-  
+
   async signPeople(db: IConnection, arData: any) {
     await this.importService.createTmpPeople(db);
     await this.importService.clearDataPeople(db);
     const importData: any = await this.importService.importPeople(db, arData);
-    
+
     if (importData) {
       const peopleRs: any = await this.importService.getTempPeople(db);
       const titleRs: any = await this.importService.getTitle(db);
@@ -172,9 +185,12 @@ export class ImportExcelComponent implements OnInit {
 
   async signWareHouses(db: IConnection, arData: any) {
     await this.importService.clearDataWareHouse(db);
-    console.log(arData)
     const importData: any = await this.importService.importWareHouses(db, arData);
 
     if (!importData) this.alertService.error();
+  }
+
+  async signGenerics(db: IConnection, arData: any) {
+    await this.importService.clearDataGenerics(db);
   }
 }
