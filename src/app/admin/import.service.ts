@@ -8,7 +8,7 @@ export class ImportService {
 
   createTmpPeople(db: IConnection) {
     const sql = `CREATE TABLE tmp_people (id int NOT NULL AUTO_INCREMENT,title_name varchar(255),fname varchar(255),lname varchar(255),position_name varchar(255),PRIMARY KEY(id))`;
-  
+
     db.query(sql, function (error, results, fields) {
       if (error) {
         throw error;
@@ -31,6 +31,18 @@ export class ImportService {
   importPeople(db: IConnection, data: any) {
     data.forEach(v => {
       const sql = `INSERT INTO tmp_people SET ?`;
+      db.query(sql, v, function (error, results, fields) {
+        if (error) {
+          throw error;
+        }
+      });
+    });
+    return true;
+  }
+
+  importWareHouses(db: IConnection, data: any) {
+    data.forEach(v => {
+      const sql = `INSERT INTO wm_warehouses SET ?`;
       db.query(sql, v, function (error, results, fields) {
         if (error) {
           throw error;
@@ -157,6 +169,26 @@ export class ImportService {
   clearDataPeople(db: IConnection) {
     return new Promise((resolve, reject) => {
       db.query(`TRUNCATE TABLE um_people`, (error: any, results: any) => {
+        if (error) {
+          reject(error);
+        } else resolve(results);
+      })
+    })
+  }
+
+  clearDataWareHouse(db: IConnection) {
+    return new Promise((resolve, reject) => {
+      db.query(`TRUNCATE TABLE wm_warehouses`, (error: any, results: any) => {
+        if (error) {
+          reject(error);
+        } else resolve(results);
+      })
+    })
+  }
+
+  clearDataGenerics(db: IConnection) {
+    return new Promise((resolve, reject) => {
+      db.query(`TRUNCATE TABLE mm_generics`, (error: any, results: any) => {
         if (error) {
           reject(error);
         } else resolve(results);
