@@ -347,7 +347,7 @@ export class InvsService {
   }
 
   truncate2(db: IConnection, table) {
-    const sql = `TRUNCATE TABLE mm_units;TRUNCATE TABLE mm_generics;`;
+    const sql = `TRUNCATE TABLE ${table}`;
     db.query(sql, function (error, results, fields) {
       if (error) {
         console.log(error);

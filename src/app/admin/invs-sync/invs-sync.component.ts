@@ -1,5 +1,5 @@
 import { InvsService } from './../invs.service';
-import { Component, OnInit , ViewChild} from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import * as _ from 'lodash';
 @Component({
   selector: 'app-invs-sync',
@@ -21,7 +21,7 @@ export class InvsSyncComponent implements OnInit {
     this.isSave = true;
     // try {
     // this.loading = true;
-    await this.modalLoading.show();
+    this.modalLoading.show();
     const dbInv: any = await this.invsService.createConnection('config_invs.json');
     const dbMmis: any = await this.invsService.createConnection('config.json');
     const tables = [
@@ -33,13 +33,13 @@ export class InvsSyncComponent implements OnInit {
       'mm_products',
       'mm_labelers',
       'um_people'];
-    dbInv.connect();
-    dbMmis.connect();
+    await dbInv.connect();
+    await dbMmis.connect();
     await this.invsService.truncate(dbMmis, tables);
-    // await this.getUnits(dbInv, dbMmis);
-    // await this.getGenericDosages(dbInv, dbMmis);
-    // await this.getGenericHosp(dbInv, dbMmis);
-    // await this.getGenericGroup(dbInv, dbMmis);
+    await this.getUnits(dbInv, dbMmis);
+    await this.getGenericDosages(dbInv, dbMmis);
+    await this.getGenericHosp(dbInv, dbMmis);
+    await this.getGenericGroup(dbInv, dbMmis);
     await this.getGenerics(dbInv, dbMmis);
     // await this.getProducts(dbInv, dbMmis);
     // await this.getLabelers(dbInv, dbMmis);
@@ -47,9 +47,9 @@ export class InvsSyncComponent implements OnInit {
     await dbInv.end();
     await dbMmis.end();
     // if (rs) {
-      this.loading = false;
-    
-    this.modalLoading.hide();
+    this.loading = false;
+
+    this.modalLoading.hide(6000);
     console.log('close');
     this.isSave = false;
     // } catch (error) {
@@ -172,8 +172,8 @@ export class InvsSyncComponent implements OnInit {
             resolve();
           })
           .catch(() => {
-          reject();
-        });
+            reject();
+          });
         // .then((t) => {
         //   console.log(t);
         //   resolve(true);

@@ -14,15 +14,16 @@ export class LoadingModalComponent implements OnInit {
   }
 
   show() {
-    setTimeout(() => {
-      this.opened = true;
-    }, 500);
+    // setTimeout(() => {
+    //   this.opened = true;
+    // }, time);
+    this.opened = true;
   }
 
-  hide() {
+  hide(time: number = 1000) {
     setTimeout(() => {
       this.opened = false;
-    }, 500);
+    }, time);
   }
 
 }
