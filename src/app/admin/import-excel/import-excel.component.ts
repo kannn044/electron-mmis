@@ -36,7 +36,9 @@ export class ImportExcelComponent implements OnInit {
 
   async importExcel() {
     const db: IConnection = this.connectionService.createConnection('config.json');
-    await this.importService.createTmp(db);
+    db.connect();
+    // await this.importService.createTmpPeople(db);
+    await this.importService.createTmpLabeler(db);
 
     const targetDir = path.join(os.homedir());
     const workSheetsFromFile = xlsx.parse(fs.readFileSync(`${targetDir}/template.xlsx`));
@@ -58,59 +60,78 @@ export class ImportExcelComponent implements OnInit {
         }
 
         if (x === 1) {
-
+          const obj = {
+            'labeler_name': excelData[y][0],
+            'description': excelData[y][1],
+            'nin': excelData[y][2],
+            'address': excelData[y][3],
+            'tambon_code': excelData[y][4],
+            'ampur_code': excelData[y][5],
+            'province_code': excelData[y][6],
+            'zipcode': excelData[y][7],
+            'phone': excelData[y][8],
+            'labeler_type': excelData[y][9],
+            'labeler_status': '1'
+          };
+          arData.push(obj);
         }
       }
-      if (x === 0) {
-        await this.signPeople(db, arData);
+      // if (x === 0) await this.signPeople(db, arData);
+      if (x === 1) {
+        await this.signLabeler(db, arData);
       }
     }
     this.alertService.success();
+    db.end();
   }
 
-  // async signLabeler(db: IConnection, arData: any) {
-  //   this.importService.dbConnec(db);
-  //   let rs = await this.importService.importLabeler(db, arData);
+  async signLabeler(db: IConnection, arData: any) {
+    await this.importService.clearDataLabeler(db);
+    const importData: any = await this.importService.importLabeler(db, arData);
 
-  //   if (rs) {
-  //     let rsProvince: any = await this.importService.selectProvince(db);
-  //     let rsAmpur: any = await this.importService.selectAmpur(db);
-  //     let rsTambon: any = await this.importService.selectTambon(db);
-  //     let rsTmp: any = await this.importService.selectTempLabeler(db);
+    if (importData) {
+      const labelerRs: any = await this.importService.getTempLabeler(db);
+      const tambonRs: any = await this.importService.getTambon(db);
+      const ampurRs: any = await this.importService.getAmpur(db);
+      const provinceRs: any = await this.importService.getProvince(db);
+      const labeler = [];
+      labelerRs.forEach(v => {
+        const idxTcode = _.findIndex(tambonRs, { 'tambon_name': v.tambon_code });
+        const tambon_code = idxTcode > -1 ? tambonRs[idxTcode].tambon_code : null;
 
-  //     let comma: number = 0;
-  //     let sqlText: string = '';
+        const idxAcode = _.findIndex(ampurRs, { 'ampur_name': v.ampur_code });
+        const ampur_code = idxAcode > -1 ? ampurRs[idxAcode].ampur_code : null;
 
-  //     rsTmp.forEach(rs => {
-  //       rsProvince.forEach(v => {
-  //         v.province_code == rs.province_name ? rs.province_name = v.province_name : rs.province_name = v.province_name;
-  //       });
-  //       rsAmpur.forEach(v => {
-  //         p.position_name == rs.position_name ? rs.position_id = p.position_id : rs.position_id = rs.position_id;
-  //       });
-  //       rsTambon.forEach(v => {
-  //         p.position_name == rs.position_name ? rs.position_id = p.position_id : rs.position_id = rs.position_id;
-  //       });
-  //       comma > 0 ? sqlText += ',' : sqlText += '';
-  //       sqlText += '(\'' + rs.title_id + '\',\'' + rs.fname + '\',\'' + rs.lname + '\',\'' + rs.position_id + '\')';
-  //       comma++;
-  //     });
+        const idxPcode = _.findIndex(provinceRs, { 'province_name': v.province_code });
+        const province_code = idxPcode > -1 ? provinceRs[idxPcode].province_code : null;
+        const objLabeler = {
+          'labeler_name': v.labeler_name,
+          'description': v.description,
+          'nin': v.nin,
+          'labeler_type': v.labeler_type,
+          'labeler_status': '1',
+          'address': v.address,
+          'tambon_code': tambon_code,
+          'ampur_code': ampur_code,
+          'province_code': province_code,
+          'zipcode': v.zipcode,
+          'phone': v.phone,
+          'is_vendor': 'Y',
+          'is_manufacturer': 'Y',
+          'short_code': v.description
+        };
+        labeler.push(objLabeler);
+      });
 
-  //     this.importService.insertPeople(db, sqlText)
-  //       .then((results: any) => {
-  //         this.importService.deleteTempPeople(db);
-  //         this.importService.dbClose(db);
-  //         this.alertService.success();
-  //       })
-  //       .catch((error: any) => {
-  //         this.alertService.error();
-  //       })
-  //   } else {
-  //     this.alertService.error();
-  //   }
-  // }
+      await this.importService.insertLabeler(db, labeler);
+      await this.importService.deleteTempLabeler(db);
+    } else {
+      this.alertService.error();
+    }
+  }
 
   async signPeople(db: IConnection, arData: any) {
+    await this.importService.clearDataPeople(db);
     const importData: any = await this.importService.importPeople(db, arData);
 
     if (importData) {
@@ -134,9 +155,8 @@ export class ImportExcelComponent implements OnInit {
         peoples.push(objPeoples);
       });
 
-      await this.importService.clearData(db);
-      await this.importService.deleteTempPeople(db);
       await this.importService.insertPeople(db, peoples);
+      await this.importService.deleteTempPeople(db);
     } else {
       this.alertService.error();
     }
