@@ -27,8 +27,11 @@ export class ImportExcelComponent implements OnInit {
     private alertService: AlertService
   ) { }
 
+  peopleRs: any;
+  openModal_people = false;
 
   ngOnInit() {
+    this.getpeople();
   }
 
   async importExcel() {
@@ -44,7 +47,7 @@ export class ImportExcelComponent implements OnInit {
       const excelData = workSheetsFromFile[x].data;
 
       const arData: any = [];
-      let text: any = '';
+      const text: any = '';
       for (let y = 1; y < excelData.length; y++) {
         if (x === 0) {
           const obj = {
@@ -52,7 +55,7 @@ export class ImportExcelComponent implements OnInit {
             'fname': excelData[y][1],
             'lname': excelData[y][2],
             'position_name': excelData[y][3]
-          }
+          };
           arData.push(obj);
         }
 
@@ -69,12 +72,14 @@ export class ImportExcelComponent implements OnInit {
             'phone': excelData[y][8],
             'labeler_type': excelData[y][9],
             'labeler_status': '1'
-          }
+          };
           arData.push(obj);
         }
       }
       // if (x === 0) await this.signPeople(db, arData);
-      if (x === 1) await this.signLabeler(db, arData);
+      if (x === 1) {
+        await this.signLabeler(db, arData);
+      }
     }
     this.alertService.success();
     db.end();
@@ -99,7 +104,6 @@ export class ImportExcelComponent implements OnInit {
 
         const idxPcode = _.findIndex(provinceRs, { 'province_name': v.province_code });
         const province_code = idxPcode > -1 ? provinceRs[idxPcode].province_code : null;
-        
         const objLabeler = {
           'labeler_name': v.labeler_name,
           'description': v.description,
@@ -156,5 +160,19 @@ export class ImportExcelComponent implements OnInit {
     } else {
       this.alertService.error();
     }
+  }
+
+  async close() {
+    this.openModal_people = false;
+  }
+
+  async getpeople() {
+    const db: IConnection = this.connectionService.createConnection('config.json');
+    this.peopleRs = await this.importService.getpeople(db);
+  }
+
+  async onEdit(item) {
+    console.log(item.people_id);
+    this.openModal_people = true;
   }
 }
