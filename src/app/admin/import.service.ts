@@ -16,6 +16,26 @@ export class ImportService {
     return true;
   }
 
+  createTmpGenerics(db: IConnection) {
+    const sql = `CREATE TABLE tmp_generics (generic_id varchar(255) NOT NULL,generic_name varchar(255),working_code varchar(255),account_id varchar(255),generic_type_id varchar(255),primary_unit_id varchar(255),standard_cost int(10) DEFAULT 0,unit_cost int(10) DEFAULT 0,min_qty int(10),max_qty int(10),PRIMARY KEY(generic_id))`;
+    db.query(sql, function (error, results, fields) {
+      if (error) {
+        throw error;
+      }
+    });
+    return true;
+  }
+
+  createTmpProducts(db: IConnection) {
+    const sql = `CREATE TABLE tmp_products (product_id int NOT NULL AUTO_INCREMENT,product_name varchar(255),working_code varchar(255),generic_id varchar(255),primary_unit_id varchar(255),m_labeler_id varchar(255),v_labeler_id varchar(255),PRIMARY KEY(product_id))`;
+    db.query(sql, function (error, results, fields) {
+      if (error) {
+        throw error;
+      }
+    });
+    return true;
+  }
+
   createTmpLabeler(db: IConnection) {
     const sql = `CREATE TABLE tmp_labelers (id int NOT NULL AUTO_INCREMENT,labeler_name varchar(255),description varchar(255),nin varchar(255),labeler_type varchar(255),labeler_status varchar(255),address varchar(255),tambon_code varchar(255),ampur_code varchar(255),province_code varchar(255),zipcode varchar(255),phone varchar(255),PRIMARY KEY (id))`;
 
@@ -30,6 +50,42 @@ export class ImportService {
   importPeople(db: IConnection, data: any) {
     data.forEach(v => {
       const sql = `INSERT INTO tmp_people SET ?`;
+      db.query(sql, v, function (error, results, fields) {
+        if (error) {
+          throw error;
+        }
+      });
+    });
+    return true;
+  }
+
+  importGenerics(db: IConnection, data: any) {
+    data.forEach(v => {
+      const sql = `INSERT INTO tmp_generics SET ?`;
+      db.query(sql, v, function (error, results, fields) {
+        if (error) {
+          throw error;
+        }
+      });
+    });
+    return true;
+  }
+
+  importUnits(db: IConnection, data: any) {
+    data.forEach(v => {
+      const sql = `INSERT INTO mm_units SET ?`;
+      db.query(sql, v, function (error, results, fields) {
+        if (error) {
+          throw error;
+        }
+      });
+    });
+    return true;
+  }
+
+  importProducts(db: IConnection, data: any) {
+    data.forEach(v => {
+      const sql = `INSERT INTO tmp_products SET ?`;
       db.query(sql, v, function (error, results, fields) {
         if (error) {
           throw error;
@@ -66,6 +122,22 @@ export class ImportService {
   getTempLabeler(db: IConnection) {
     return new Promise((resolve, reject) => {
       db.query(`SELECT * FROM tmp_labelers`, (error: any, results: any) => {
+        resolve(results);
+      });
+    });
+  }
+
+  getTempGenerics(db: IConnection) {
+    return new Promise((resolve, reject) => {
+      db.query(`SELECT * FROM tmp_generics`, (error: any, results: any) => {
+        resolve(results);
+      });
+    });
+  }
+
+  getTempProducts(db: IConnection) {
+    return new Promise((resolve, reject) => {
+      db.query(`SELECT * FROM tmp_products`, (error: any, results: any) => {
         resolve(results);
       });
     });
@@ -111,6 +183,46 @@ export class ImportService {
     });
   }
 
+  getUnitsTmp(db: IConnection) {
+    return new Promise((resolve, reject) => {
+      db.query(`SELECT primary_unit_id FROM tmp_generics GROUP BY primary_unit_id`, (error: any, results: any) => {
+        resolve(results);
+      });
+    });
+  }
+
+  getGenericAccount(db: IConnection) {
+    return new Promise((resolve, reject) => {
+      db.query(`SELECT * FROM mm_generic_accounts`, (error: any, results: any) => {
+        resolve(results);
+      });
+    });
+  }
+
+  getGenericType(db: IConnection) {
+    return new Promise((resolve, reject) => {
+      db.query(`SELECT * FROM mm_generic_types`, (error: any, results: any) => {
+        resolve(results);
+      });
+    });
+  }
+  
+  getUnits(db: IConnection) {
+    return new Promise((resolve, reject) => {
+      db.query(`SELECT * FROM mm_units`, (error: any, results: any) => {
+        resolve(results);
+      });
+    });
+  }
+
+  getLabelers(db: IConnection) {
+    return new Promise((resolve, reject) => {
+      db.query(`SELECT * FROM mm_labelers`, (error: any, results: any) => {
+        resolve(results);
+      });
+    });
+  }
+
   getpeople(db: IConnection) {
     return new Promise((resolve, reject) => {
       db.query(`SELECT
@@ -148,6 +260,42 @@ export class ImportService {
     return true;
   }
 
+  insertGenerics(db: IConnection, data: any) {
+    data.forEach(v => {
+      const sql = `INSERT INTO mm_generics SET ?`;
+      db.query(sql, v, function (error, results, fields) {
+        if (error) {
+          throw error;
+        }
+      });
+    });
+    return true;
+  }
+
+  insertProducts(db: IConnection, data: any) {
+    data.forEach(v => {
+      const sql = `INSERT INTO mm_products SET ?`;
+      db.query(sql, v, function (error, results, fields) {
+        if (error) {
+          throw error;
+        }
+      });
+    });
+    return true;
+  }
+
+  insertUnitGenerics(db: IConnection, data: any) {
+    data.forEach(v => {
+      const sql = `INSERT INTO mm_unit_generics SET ?`;
+      db.query(sql, v, function (error, results, fields) {
+        if (error) {
+          throw error;
+        }
+      });
+    });
+    return true;
+  }
+
   insertLabeler(db: IConnection, data: any) {
     data.forEach(v => {
       const sql = `INSERT INTO mm_labelers SET ?`;
@@ -163,6 +311,26 @@ export class ImportService {
   deleteTempPeople(db: IConnection) {
     return new Promise((resolve, reject) => {
       db.query(`DROP TABLE tmp_people`, (error: any, results: any) => {
+        if (error) {
+          reject(error);
+        } else { resolve(results); }
+      });
+    });
+  }
+  
+  deleteTempGenerics(db: IConnection) {
+    return new Promise((resolve, reject) => {
+      db.query(`DROP TABLE tmp_generics`, (error: any, results: any) => {
+        if (error) {
+          reject(error);
+        } else { resolve(results); }
+      });
+    });
+  }
+
+  deleteTempProducts(db: IConnection) {
+    return new Promise((resolve, reject) => {
+      db.query(`DROP TABLE tmp_products`, (error: any, results: any) => {
         if (error) {
           reject(error);
         } else { resolve(results); }
@@ -190,6 +358,16 @@ export class ImportService {
     });
   }
 
+  clearDataUnits(db: IConnection) {
+    return new Promise((resolve, reject) => {
+      db.query(`TRUNCATE TABLE mm_units`, (error: any, results: any) => {
+        if (error) {
+          reject(error);
+        } else { resolve(results); }
+      });
+    });
+  }
+
   clearDataWareHouse(db: IConnection) {
     return new Promise((resolve, reject) => {
       db.query(`TRUNCATE TABLE wm_warehouses`, (error: any, results: any) => {
@@ -203,6 +381,26 @@ export class ImportService {
   clearDataGenerics(db: IConnection) {
     return new Promise((resolve, reject) => {
       db.query(`TRUNCATE TABLE mm_generics`, (error: any, results: any) => {
+        if (error) {
+          reject(error);
+        } else { resolve(results); }
+      });
+    });
+  }
+
+  clearDataProducts(db: IConnection) {
+    return new Promise((resolve, reject) => {
+      db.query(`TRUNCATE TABLE mm_products`, (error: any, results: any) => {
+        if (error) {
+          reject(error);
+        } else { resolve(results); }
+      });
+    });
+  }
+
+  clearDataUnitGenerics(db: IConnection) {
+    return new Promise((resolve, reject) => {
+      db.query(`TRUNCATE TABLE mm_unit_generics`, (error: any, results: any) => {
         if (error) {
           reject(error);
         } else { resolve(results); }
