@@ -1,5 +1,5 @@
 import { InvsService } from './../invs.service';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import * as _ from 'lodash';
 @Component({
   selector: 'app-invs-sync',
@@ -7,7 +7,9 @@ import * as _ from 'lodash';
   styles: []
 })
 export class InvsSyncComponent implements OnInit {
-
+  @ViewChild('modalLoading') public modalLoading: any;
+  loading = false;
+  isSave = false;
   constructor(
     private invsService: InvsService
   ) { }
@@ -16,123 +18,180 @@ export class InvsSyncComponent implements OnInit {
   }
 
   async sync() {
+    this.isSave = true;
+    // try {
+    // this.loading = true;
+    this.modalLoading.show();
     const dbInv: any = await this.invsService.createConnection('config_invs.json');
     const dbMmis: any = await this.invsService.createConnection('config.json');
-    // this.getUnits(dbInv, dbMmis);
-    // this.getGenericDosages(dbInv, dbMmis);
-    // this.getGenericHosp(dbInv, dbMmis);
-    // this.getGenericGroup(dbInv, dbMmis);
+    const tables = [
+      'mm_units',
+      'mm_generic_dosages',
+      'mm_generic_hosp',
+      'mm_generic_groups',
+      'mm_generics',
+      'mm_products',
+      'mm_labelers',
+      'um_people'];
+    await dbInv.connect();
+    await dbMmis.connect();
+    await this.invsService.truncate(dbMmis, tables);
+    await this.getUnits(dbInv, dbMmis);
+    await this.getGenericDosages(dbInv, dbMmis);
+    await this.getGenericHosp(dbInv, dbMmis);
+    await this.getGenericGroup(dbInv, dbMmis);
+    await this.getGenerics(dbInv, dbMmis);
+    // await this.getProducts(dbInv, dbMmis);
+    // await this.getLabelers(dbInv, dbMmis);
+    // await this.getPeoples(dbInv, dbMmis);
+    await dbInv.end();
+    await dbMmis.end();
+    // if (rs) {
+    this.loading = false;
 
-    // this.getGenerics(dbInv, dbMmis);
-    
-    // this.getProducts(dbInv, dbMmis);
-    // this.getLabelers(dbInv, dbMmis);
-    // this.getPeoples(dbInv, dbMmis);
-
+    this.modalLoading.hide(6000);
+    console.log('close');
+    this.isSave = false;
+    // } catch (error) {
+    //   this.loading = false;
+    // }
   }
 
   async getUnits(dbInv, dbMmis) {
-    dbInv.connect();
-    dbMmis.connect();
-    const unitsRs: any = await this.invsService.getUnits(dbInv);
-    const units = [];
-    unitsRs.forEach(u => {
-      const objUnit = {
-        'unit_id': u.SU_ID,
-        'unit_name': u.SALE_UNIT,
-        'unit_code': u.SALE_UNIT,
-        'is_primary': 'Y',
-        'id_deleted': u.HIDE
-      };
-      units.push(objUnit);
-    });
-    await this.invsService.insertUnits(dbMmis, units);
-    dbInv.end();
-    dbMmis.end();
+    console.log('units');
+    try {
+
+      const unitsRs: any = await this.invsService.getUnits(dbInv);
+      const units = [];
+      for (const u of unitsRs) {
+        const objUnit = {
+          'unit_id': u.SU_ID,
+          'unit_name': u.SALE_UNIT,
+          'unit_code': u.SALE_UNIT,
+          'is_primary': 'Y',
+          'is_deleted': u.HIDE
+        };
+        units.push(objUnit);
+      }
+      await this.invsService.insertUnits(dbMmis, units);
+
+    } catch (error) {
+      console.log(error);
+
+    }
   }
 
   async getGenericDosages(dbInv, dbMmis) {
-    dbInv.connect();
-    dbMmis.connect();
-    const dosagesRs: any = await this.invsService.getDosages(dbInv);
-    const dosages = [];
-    dosagesRs.forEach(u => {
-      const objDosages = {
-        'dosage_name': u.DOSAGE_FORM
-      };
-      dosages.push(objDosages);
-    });
-    await this.invsService.insertDosages(dbMmis, dosages);
-    dbInv.end();
-    dbMmis.end();
+    console.log('generic dosage');
+    try {
+      dbInv.connect();
+      dbMmis.connect();
+      const dosagesRs: any = await this.invsService.getDosages(dbInv);
+      const dosages = [];
+      for (const u of dosagesRs) {
+        const objDosages = {
+          'dosage_id': u.DFORM_ID,
+          'dosage_name': u.DFORM_NAME
+        };
+        dosages.push(objDosages);
+      }
+      await this.invsService.insertDosages(dbMmis, dosages);
+
+    } catch (error) {
+      console.log(error);
+
+    }
   }
 
   async getGenericHosp(dbInv, dbMmis) {
-    dbInv.connect();
-    dbMmis.connect();
-    const genericHospsRs: any = await this.invsService.getGenericHosp(dbInv);
-    const genericHosps = [];
-    genericHospsRs.forEach(u => {
-      const objGenericHosps = {
-        'id': u.HOSP_LIST_CODE,
-        'name': u.HOSP_LIST_DESC
-      };
-      genericHosps.push(objGenericHosps);
-    });
-    await this.invsService.insertGenericHosp(dbMmis, genericHosps);
-    dbInv.end();
-    dbMmis.end();
+    console.log('generic hospital');
+    try {
+      const genericHospsRs: any = await this.invsService.getGenericHosp(dbInv);
+      const genericHosps = [];
+      genericHospsRs.forEach(u => {
+        const objGenericHosps = {
+          'id': u.HOSP_LIST_CODE,
+          'name': u.HOSP_LIST_DESC
+        };
+        genericHosps.push(objGenericHosps);
+      });
+      await this.invsService.insertGenericHosp(dbMmis, genericHosps);
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   async getGenericGroup(dbInv, dbMmis) {
-    dbInv.connect();
-    dbMmis.connect();
-    const genericGroupRs: any = await this.invsService.getGenericGroup(dbInv);
-    const genericGroups = [];
-    genericGroupRs.forEach(u => {
-      const objGenericGroups = {
-        'group_id': +u.CODE,
-        'group_name': u.NAME
-      };
-      genericGroups.push(objGenericGroups);
-    });
-    await this.invsService.insertGenericGroup(dbMmis, genericGroups);
-    dbInv.end();
-    dbMmis.end();
+    console.log('generic group');
+    try {
+      const genericGroupRs: any = await this.invsService.getGenericGroup(dbInv);
+      const genericGroups = [];
+      genericGroupRs.forEach(u => {
+        const objGenericGroups = {
+          'group_id': +u.CODE,
+          'group_name': u.NAME
+        };
+        genericGroups.push(objGenericGroups);
+      });
+      await this.invsService.insertGenericGroup(dbMmis, genericGroups);
+    } catch (error) {
+      console.log(error);
+
+    }
   }
 
   async getGenerics(dbInv, dbMmis) {
-    dbInv.connect();
-    dbMmis.connect();
-    const genericRs: any = await this.invsService.getGenerics(dbInv);
-    const generics = [];
-    genericRs.forEach(v => {
-      const objGenerics = {
-        'generic_id': v.WORKING_CODE,
-        'generic_name': v.DRUG_NAME,
-        'working_code': v.WORKING_CODE,
-        'description': v.NOTE,
-        'keywords': v.DRUG_NAME_KEY,
-        'group_id': +v.ED_GROUP,
-        'account_id': +v.IS_ED === 1 || +v.IS_ED === 2 ? v.IS_ED : null,
-        'dosage_id': v.DFORM_ID,
-        'standard_cost': v.STD_PRICE1,
-        'unit_cost': v.SALE_UNIT_PRICE,
-        'min_qty': v.MIN_LEVEL,
-        'max_qty': v.MAX_LEVEL,
-        'generic_hosp_id': v.HOSP_LIST,
-        'primary_unit_id': v.SALE_UNIT_ID
-      };
-      generics.push(objGenerics);
-    });
-    console.log(generics);
+    return new Promise(async (resolve, reject) => {
+      console.log('generics');
+      try {
+        const genericRs: any = await this.invsService.getGenerics(dbInv);
+        const generics = [];
+        for (const v of genericRs) {
+          const objGenerics = {
+            'generic_id': v.WORKING_CODE,
+            'generic_name': v.DRUG_NAME,
+            'working_code': v.WORKING_CODE,
+            'description': v.NOTE,
+            'keywords': v.DRUG_NAME_KEY,
+            'group_id': v.GROUP_CODE ? +v.GROUP_CODE : null,
+            'account_id': +v.IS_ED === 1 || +v.IS_ED === 2 ? v.IS_ED : null,
+            'dosage_id': v.DFORM_ID,
+            'standard_cost': v.STD_PRICE1,
+            'unit_cost': v.SALE_UNIT_PRICE,
+            'min_qty': v.MIN_LEVEL,
+            'max_qty': v.MAX_LEVEL,
+            'generic_hosp_id': v.HOSP_LIST,
+            'primary_unit_id': v.SALE_UNIT_ID
+          };
+          generics.push(objGenerics);
+        }
+        // console.log(generics);
 
-    // await this.invsService.insertGenerics(dbMmis, generics);
-    dbInv.end();
-    dbMmis.end();
+        this.invsService.foreach(dbMmis, 'mm_generics', generics)
+          .then(() => {
+            resolve();
+          })
+          .catch(() => {
+            reject();
+          });
+        // .then((t) => {
+        //   console.log(t);
+        //   resolve(true);
+        // })
+        // .catch((err) => {
+        //   throw err;
+        // });
+
+      } catch (error) {
+        console.log(error);
+
+      }
+    });
   }
 
   async getProducts(dbInv, dbMmis) {
+    console.log('products');
+
     dbInv.connect();
     dbMmis.connect();
     const productRs: any = await this.invsService.getProducts(dbInv);
@@ -156,6 +215,8 @@ export class InvsSyncComponent implements OnInit {
   }
 
   async getLabelers(dbInv, dbMmis) {
+    console.log('labeler');
+
     dbInv.connect();
     dbMmis.connect();
     const labelerRs: any = await this.invsService.getLabelers(dbInv);
@@ -177,6 +238,8 @@ export class InvsSyncComponent implements OnInit {
   }
 
   async getPeoples(dbInv, dbMmis) {
+    console.log('peoples');
+
     dbMmis.connect();
     dbInv.connect();
     const peopleRs: any = await this.invsService.getPeoples(dbInv);

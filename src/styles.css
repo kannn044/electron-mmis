@@ -249,7 +249,7 @@ app-loading-modal .modal-backdrop {
     bottom: 0;
     right: 0;
     left: 0;
-    background-color: transparent;
+    /* background-color: transparent; */
     opacity: .85;
     z-index: 1040;
 }

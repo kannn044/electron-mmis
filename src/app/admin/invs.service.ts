@@ -61,10 +61,8 @@ export class InvsService {
   }
   getUnits(db: IConnection) {
     return new Promise((resolve, reject) => {
-
-      const sql = `select * from sale_unit`;
+      const sql = `select * from sale_unit where hide = 'N'`;
       db.query(sql, (error: any, results: any) => {
-  
         if (error) {
           reject(error);
         } else {
@@ -79,7 +77,7 @@ export class InvsService {
 
       const sql = `select * from DRUG_GN`;
       db.query(sql, (error: any, results: any) => {
-  
+
         if (error) {
           reject(error);
         } else {
@@ -94,7 +92,7 @@ export class InvsService {
 
       const sql = `select * from DRUG_VN`;
       db.query(sql, (error: any, results: any) => {
-  
+
         if (error) {
           reject(error);
         } else {
@@ -109,7 +107,7 @@ export class InvsService {
 
       const sql = `select * from company`;
       db.query(sql, (error: any, results: any) => {
-  
+
         if (error) {
           reject(error);
         } else {
@@ -121,10 +119,8 @@ export class InvsService {
 
   getDosages(db: IConnection) {
     return new Promise((resolve, reject) => {
-
-      const sql = `select * from DRUG_GN group by DOSAGE_FORM`;
+      const sql = `select * from dosage_form where hide = 'n'`;
       db.query(sql, (error: any, results: any) => {
-  
         if (error) {
           reject(error);
         } else {
@@ -136,10 +132,8 @@ export class InvsService {
 
   getGenericHosp(db: IConnection) {
     return new Promise((resolve, reject) => {
-
       const sql = `select * from hosp_list`;
       db.query(sql, (error: any, results: any) => {
-  
         if (error) {
           reject(error);
         } else {
@@ -194,7 +188,7 @@ export class InvsService {
 
       const sql = `select * from ED_GROUP`;
       db.query(sql, (error: any, results: any) => {
-  
+
         if (error) {
           reject(error);
         } else {
@@ -205,15 +199,15 @@ export class InvsService {
   }
 
   insertDosages(db: IConnection, dosages) {
-    dosages.forEach(v => {
-      const sql = `insert into mm_generic_dosages (dosage_name) values (?)`;
-      db.query(sql, v.dosage_name, function (error, results, fields) {
+    for (const v of dosages) {
+      const sql = `insert into mm_generic_dosages set ?`;
+      db.query(sql, v, function (error, results, fields) {
         if (error) {
-          throw error;
+          console.log(error);
         }
         console.log(results.insertId);
       });
-    });
+    }
     return;
   }
 
@@ -248,7 +242,7 @@ export class InvsService {
       const sql = `insert into mm_generic_hosp (id,name) values (?,?)`;
       db.query(sql, [v.id, v.name], function (error, results, fields) {
         if (error) {
-          throw error;
+          console.log(error);
         }
         console.log(results.insertId);
       });
@@ -274,7 +268,8 @@ export class InvsService {
       const sql = `insert into mm_units SET ?`;
       db.query(sql, v, function (error, results, fields) {
         if (error) {
-          throw error;
+          // throw error;
+          console.log(error);
         }
         console.log(results.insertId);
       });
@@ -282,17 +277,46 @@ export class InvsService {
     return;
   }
 
-  insertGenerics(db: IConnection, generics) {
-    generics.forEach(v => {
-      const sql = `insert into mm_generics SET ?)`;
-      db.query(sql, v, function (error, results, fields) {
+  insert(db: IConnection, item, sql) {
+    console.log('insert');
+    return new Promise((resolve, reject) => {
+      db.query(sql, item, function (error, results, fields) {
         if (error) {
-          throw error;
+          console.log(error);
+          reject(error);
         }
-        console.log(results.insertId);
+        resolve(true);
       });
     });
-    return;
+  }
+
+  foreach(db: IConnection, name, items) {
+    return new Promise((resolve, reject) => {
+      const sql = `insert into ${name} SET ?`;
+      items.forEach(async (g) => {
+        await this.insert(db, g, sql);
+      });
+      resolve();
+      console.log('insert done!');
+    });
+  }
+
+
+  insertGenerics(db: IConnection, generics) {
+    return new Promise((resolve, reject) => {
+      for (const v of generics) {
+        const sql = `insert into mm_generics SET ?`;
+        db.query(sql, v, function (error, results, fields) {
+          if (error) {
+            console.log(error);
+            reject(error);
+          }
+          console.log(results.insertId);
+        });
+      }
+      console.log('succsee');
+      resolve(true);
+    });
   }
 
   insertProducts(db: IConnection, generics) {
@@ -308,6 +332,28 @@ export class InvsService {
     return;
   }
 
-  closeConnection(db: IConnection) {
+  truncate(db: IConnection, table) {
+    return new Promise((resolve, reject) => {
+      table.forEach(v => {
+        const sql = `TRUNCATE TABLE ${v}`;
+        db.query(sql, function (error, results, fields) {
+          if (error) {
+            reject(error);
+          }
+          resolve();
+        });
+      });
+    });
   }
+
+  truncate2(db: IConnection, table) {
+    const sql = `TRUNCATE TABLE ${table}`;
+    db.query(sql, function (error, results, fields) {
+      if (error) {
+        console.log(error);
+      }
+      return;
+    });
+  }
+
 }
