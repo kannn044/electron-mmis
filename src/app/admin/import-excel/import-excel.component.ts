@@ -67,7 +67,7 @@ export class ImportExcelComponent implements OnInit {
 
       const arData: any = [];
       const arData1: any = [];
-      console.log('true', x)
+      console.log('true', x);
       for (let y = 1; y < excelData.length; y++) {
         const idGenerics = Math.random().toString(15).substr(2, 9);
         if (x === 0) {
@@ -320,7 +320,7 @@ export class ImportExcelComponent implements OnInit {
               'qty': v.conversion,
               'cost': v.package_cost,
               'generic_id': v.generic_id
-            })
+            });
           }
         });
 
