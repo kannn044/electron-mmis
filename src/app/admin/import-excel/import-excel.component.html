@@ -7,7 +7,7 @@
     <div class="card">
       <div style="padding: 1em;">
         <img src="../../../assets/pic/excel.svg" height="50" width="50" style="margin-right:1em "> ดาวโหลดไฟล์ Excel
-        <button style="float: right;" class="btn btn-primary">Download</button>
+        <button style="float: right;" class="btn btn-primary" (click)="downloadFile()">Download</button>
       </div>
     </div>
   </div>
@@ -15,7 +15,7 @@
     <div class="card">
       <div style="padding: 1em;">
         <img src="../../../assets/pic/excel.svg" height="50" width="50" style="margin-right:1em "> อัพโหลดไฟล์ Excel
-        <input type="file" style="margin-left:1em ">
+        <input type="file" #file style="margin-left: 1em;" (change)="fileChangeEvent($event)">
         <button style="float: right;" class="btn btn-success" (click)="importExcel()">Import</button>
       </div>
     </div>

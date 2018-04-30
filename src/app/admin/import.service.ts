@@ -17,7 +17,7 @@ export class ImportService {
   }
 
   createTmpGenerics(db: IConnection) {
-    const sql = `CREATE TABLE tmp_generics (generic_id varchar(255) NOT NULL,generic_name varchar(255),working_code varchar(255),account_id varchar(255),generic_type_id varchar(255),primary_unit_id varchar(255),standard_cost int(10) DEFAULT 0,unit_cost int(10) DEFAULT 0,min_qty int(10),max_qty int(10),PRIMARY KEY(generic_id))`;
+    const sql = `CREATE TABLE tmp_generics (generic_id varchar(255) NOT NULL,generic_name varchar(255),working_code varchar(255),account_id varchar(255),generic_type_id varchar(255),package varchar(255),conversion varchar(255),primary_unit_id varchar(255),standard_cost int(10) DEFAULT 0,unit_cost int(10) DEFAULT 0,package_cost int(10) DEFAULT 0,min_qty int(10),max_qty int(10),PRIMARY KEY(generic_id))`;
     db.query(sql, function (error, results, fields) {
       if (error) {
         throw error;

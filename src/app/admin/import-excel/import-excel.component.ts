@@ -26,7 +26,8 @@ export class ImportExcelComponent implements OnInit {
     private connectionService: ConnectionService,
     private importService: ImportService,
     private alertService: AlertService
-  ) { }
+  ) {
+  }
 
   peopleRs: any;
   titleRs: any;
@@ -34,8 +35,20 @@ export class ImportExcelComponent implements OnInit {
   openModal_people = false;
   peopleEdit = {};
 
+  file: any;
+  fileName: any;
+
   ngOnInit() {
     this.getpeople();
+  }
+
+  fileChangeEvent(fileInput: any) {
+    this.file = <Array<File>>fileInput.target.files;
+    this.fileName = this.file[0].name;
+  }
+
+  async downloadFile() {
+
   }
 
   async importExcel() {
@@ -50,8 +63,7 @@ export class ImportExcelComponent implements OnInit {
 
       const arData: any = [];
       const arData1: any = [];
-
-
+      console.log('true', x)
       for (let y = 1; y < excelData.length; y++) {
         let idGenerics = Math.random().toString(15).substr(2, 9);;
         if (x === 0) {
@@ -101,20 +113,23 @@ export class ImportExcelComponent implements OnInit {
             'working_code': excelData[y][2],
             'account_id': excelData[y][3],
             'generic_type_id': excelData[y][4],
-            'primary_unit_id': excelData[y][5],
-            'standard_cost': excelData[y][6],
-            'unit_cost': excelData[y][7],
-            'min_qty': excelData[y][8],
-            'max_qty': excelData[y][9],
+            'package': excelData[y][5],
+            'conversion': excelData[y][6],
+            'primary_unit_id': excelData[y][7],
+            'standard_cost': excelData[y][8],
+            'unit_cost': excelData[y][9],
+            'package_cost': excelData[y][10],
+            'min_qty': excelData[y][11],
+            'max_qty': excelData[y][12],
           };
 
           const obj1 = {
             'product_name': excelData[y][1],
             'working_code': excelData[y][2],
             'generic_id': excelData[y][2],
-            'primary_unit_id': excelData[y][5],
-            'm_labeler_id': excelData[y][10],
-            'v_labeler_id': excelData[y][11],
+            'primary_unit_id': excelData[y][7],
+            'm_labeler_id': excelData[y][13],
+            'v_labeler_id': excelData[y][14],
           };
           arData.push(obj);
           arData1.push(obj1);
@@ -261,6 +276,9 @@ export class ImportExcelComponent implements OnInit {
           const idxUnitGenerics = _.findIndex(unitsRs, { 'unit_name': v.primary_unit_id });
           const primary_unit_id = idxUnitGenerics > -1 ? unitsRs[idxUnitGenerics].unit_id : null;
 
+          const idxPackage = _.findIndex(unitsRs, { 'unit_name': v.package });
+          const package_id = idxPackage > -1 ? unitsRs[idxUnitGenerics].unit_id : null;
+
           const idxAccount = _.findIndex(AccountRs, { 'account_name': v.account_id });
           const account_id = idxAccount > -1 ? AccountRs[idxAccount].account_id : null;
 
@@ -290,6 +308,16 @@ export class ImportExcelComponent implements OnInit {
 
           generics.push(objGenerics);
           unitGenerics.push(objUnitGenerics);
+
+          if (v.conversion > 1) {
+            unitGenerics.push({
+              'from_unit_id': idxPackage,
+              'to_unit_id': primary_unit_id,
+              'qty': v.conversion,
+              'cost': v.package_cost,
+              'generic_id': v.generic_id
+            })
+          }
         });
 
         tmpProductRs.forEach(v => {
@@ -298,10 +326,10 @@ export class ImportExcelComponent implements OnInit {
 
           const idxMlabeler = _.findIndex(labelerRs, { 'labeler_name': v.m_labeler_id });
           const m_labeler_id = idxMlabeler > -1 ? labelerRs[idxMlabeler].lebeler_id : null;
-          
+
           const idxVlabeler = _.findIndex(labelerRs, { 'labeler_name': v.v_labeler_id });
           const v_labeler_id = idxVlabeler > -1 ? labelerRs[idxVlabeler].lebeler_id : null;
-          
+
           const objProducts = {
             'product_id': v.product_id,
             'product_name': v.product_name,
