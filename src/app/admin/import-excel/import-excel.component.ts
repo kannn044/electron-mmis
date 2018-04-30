@@ -123,7 +123,6 @@ export class ImportExcelComponent implements OnInit {
       if (x === 3) await this.signGenerics(db, arData, arData1);
     }
     await this.modalLoading.hide();
-    // await this.alertService.success();
     await this.getpeople();
     await db.end();
   }
