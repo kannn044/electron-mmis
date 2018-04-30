@@ -49,7 +49,11 @@ export class ImportExcelComponent implements OnInit {
       const excelData = workSheetsFromFile[x].data;
 
       const arData: any = [];
+      const arData1: any = [];
+
+
       for (let y = 1; y < excelData.length; y++) {
+        let idGenerics = Math.random().toString(15).substr(2, 9);;
         if (x === 0) {
           const obj = {
             'title_name': excelData[y][0],
@@ -90,26 +94,41 @@ export class ImportExcelComponent implements OnInit {
         }
 
         if (x === 3) {
+          excelData[y][2] === undefined ? excelData[y][2] = idGenerics : excelData[y][2] = excelData[y][2];
           const obj = {
-            'warehouse_id': excelData[y][0],
-            'warehouse_name': excelData[y][1],
-            'location': excelData[y][2],
-            'short_code': excelData[y][2],
-            'his_hospcode': excelData[y][3],
-            'his_dep_code': excelData[y][4],
+            'generic_id': excelData[y][2],
+            'generic_name': excelData[y][0],
+            'working_code': excelData[y][2],
+            'account_id': excelData[y][3],
+            'generic_type_id': excelData[y][4],
+            'primary_unit_id': excelData[y][5],
+            'standard_cost': excelData[y][6],
+            'unit_cost': excelData[y][7],
+            'min_qty': excelData[y][8],
+            'max_qty': excelData[y][9],
+          };
+
+          const obj1 = {
+            'product_name': excelData[y][1],
+            'working_code': excelData[y][2],
+            'generic_id': excelData[y][2],
+            'primary_unit_id': excelData[y][5],
+            'm_labeler_id': excelData[y][10],
+            'v_labeler_id': excelData[y][11],
           };
           arData.push(obj);
+          arData1.push(obj1);
         }
       }
-      if (x === 0) { await this.signPeople(db, arData); }
-      if (x === 1) { await this.signLabeler(db, arData); }
-      if (x === 2) { await this.signWareHouses(db, arData); }
-      // if (x === 3) await this.signWareHouses(db, arData);
+      if (x === 0) await this.signPeople(db, arData);
+      if (x === 1) await this.signLabeler(db, arData);
+      if (x === 2) await this.signWareHouses(db, arData);
+      if (x === 3) await this.signGenerics(db, arData, arData1);
     }
-    this.modalLoading.hide();
-    this.alertService.success();
-    this.getpeople();
-    db.end();
+    await this.modalLoading.hide();
+    // await this.alertService.success();
+    await this.getpeople();
+    await db.end();
   }
 
   async signLabeler(db: IConnection, arData: any) {
@@ -199,8 +218,118 @@ export class ImportExcelComponent implements OnInit {
     if (!importData) { this.alertService.error(); }
   }
 
-  async signGenerics(db: IConnection, arData: any) {
+  async signGenerics(db: IConnection, arData: any, arData1: any) {
     await this.importService.clearDataGenerics(db);
+    await this.importService.clearDataProducts(db);
+    await this.importService.clearDataUnitGenerics(db);
+
+    await this.importService.createTmpGenerics(db);
+    await this.importService.createTmpProducts(db);
+
+    let rsg = await this.importService.importGenerics(db, arData);
+    let rsp = await this.importService.importProducts(db, arData1);
+
+    if (rsg && rsp) {
+      try {
+        await this.importService.clearDataUnits(db);
+        let unitNames: any = await this.importService.getUnitsTmp(db);
+        let units = [];
+        unitNames.forEach(v => {
+          if (v.primary_unit_id !== null) {
+            const objUnits = {
+              'unit_name': v.primary_unit_id,
+              'unit_code': v.primary_unit_id
+            }
+            units.push(objUnits);
+          }
+        });
+
+        let rsUnits: any = await this.importService.importUnits(db, units);
+        if (!rsUnits) this.alertService.error('ข้อมูลหน่วยเล็กสุดไม่สมบูรณ์')
+
+        let tmpGenericRs: any = await this.importService.getTempGenerics(db);
+        let tmpProductRs: any = await this.importService.getTempProducts(db);
+        const AccountRs: any = await this.importService.getGenericAccount(db);
+        const typesRs: any = await this.importService.getGenericType(db);
+        const unitsRs: any = await this.importService.getUnits(db);
+        const labelerRs: any = await this.importService.getLabelers(db);
+
+        let unitGenerics = [];
+        let generics = [];
+        let products = [];
+
+        tmpGenericRs.forEach(v => {
+          const idxUnitGenerics = _.findIndex(unitsRs, { 'unit_name': v.primary_unit_id });
+          const primary_unit_id = idxUnitGenerics > -1 ? unitsRs[idxUnitGenerics].unit_id : null;
+
+          const idxAccount = _.findIndex(AccountRs, { 'account_name': v.account_id });
+          const account_id = idxAccount > -1 ? AccountRs[idxAccount].account_id : null;
+
+          const idxTypes = _.findIndex(typesRs, { 'generic_type_name': v.generic_type_id });
+          const generic_type_id = idxTypes > -1 ? typesRs[idxTypes].generic_type_id : null;
+
+          const objGenerics = {
+            'generic_id': v.generic_id,
+            'generic_name': v.generic_name,
+            'working_code': v.working_code,
+            'account_id': account_id,
+            'generic_type_id': generic_type_id,
+            'primary_unit_id': primary_unit_id,
+            'standard_cost': v.standard_cost,
+            'unit_cost': v.unit_cost,
+            'min_qty': v.min_qty,
+            'max_qty': v.max_qty
+          }
+
+          const objUnitGenerics = {
+            'from_unit_id': primary_unit_id,
+            'to_unit_id': primary_unit_id,
+            'qty': 1,
+            'cost': v.unit_cost,
+            'generic_id': v.generic_id
+          }
+
+          generics.push(objGenerics);
+          unitGenerics.push(objUnitGenerics);
+        });
+
+        tmpProductRs.forEach(v => {
+          const idxPrimaryUnit = _.findIndex(unitsRs, { 'unit_name': v.primary_unit_id });
+          const primary_unit_id = idxPrimaryUnit > -1 ? unitsRs[idxPrimaryUnit].unit_id : null;
+
+          const idxMlabeler = _.findIndex(labelerRs, { 'labeler_name': v.m_labeler_id });
+          const m_labeler_id = idxMlabeler > -1 ? labelerRs[idxMlabeler].lebeler_id : null;
+          
+          const idxVlabeler = _.findIndex(labelerRs, { 'labeler_name': v.v_labeler_id });
+          const v_labeler_id = idxVlabeler > -1 ? labelerRs[idxVlabeler].lebeler_id : null;
+          
+          const objProducts = {
+            'product_id': v.product_id,
+            'product_name': v.product_name,
+            'working_code': v.working_code,
+            'generic_id': v.generic_id,
+            'primary_unit_id': primary_unit_id,
+            'm_labeler_id': m_labeler_id,
+            'v_labeler_id': v_labeler_id
+          }
+
+          products.push(objProducts);
+        });
+
+        let rsGenerics = await this.importService.insertGenerics(db, generics);
+        let rsProducts = await this.importService.insertProducts(db, products);
+        let rsUnitGenerics = await this.importService.insertUnitGenerics(db, unitGenerics);
+
+        if (rsGenerics && rsUnitGenerics && rsProducts) {
+          await this.importService.deleteTempGenerics(db);
+          await this.importService.deleteTempProducts(db);
+        } else {
+          this.alertService.error();
+        }
+      } catch (error) {
+        this.alertService.error(error.message);
+      }
+    }
   }
 
   closeModal() {
