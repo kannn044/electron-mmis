@@ -223,7 +223,7 @@ export class ImportService {
     });
   }
 
-  getpeople(db: IConnection) {
+  getPeople(db: IConnection) {
     return new Promise((resolve, reject) => {
       db.query(`SELECT
       up.people_id,
