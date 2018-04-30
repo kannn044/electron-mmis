@@ -42,7 +42,7 @@
             <clr-dg-cell>{{item.position_name}}</clr-dg-cell>
             <clr-dg-cell>
               <div class="btn-group btn-sm">
-                <button class="btn btn-outline-primary" (click)="onEdit(item)">Edit</button>
+                <button class="btn btn-outline-primary" (click)="onEditPeople(item)">Edit</button>
               </div>
             </clr-dg-cell>
           </clr-dg-row>
@@ -80,15 +80,26 @@
     </clr-tab-content>
   </clr-tab>
 </clr-tabs>
-<!-- Modal tab ข้อมูลเจ้าหน้าที่ -->
+<!--Edit Modal tab ข้อมูลเจ้าหน้าที่ -->
 <clr-modal [(clrModalOpen)]="openModal_people">
-  <h3 class="modal-title">I have a nice title</h3>
+  <h3 class="modal-title">แก้ไขข้อมูลเจ้าหน้าที่</h3>
   <div class="modal-body">
-    <p>But not much to say...</p>
+    <div style="padding: 1em">
+      <select id="peopleEdit.title_id" [(ngModel)]="peopleEdit.title_id">
+        <option [(value)]="v.title_id" *ngFor="let v of titleRs">{{v.title_name}}</option>
+      </select>
+      <input type="text" [(ngModel)]="peopleEdit.fname">
+      <input type="text" [(ngModel)]="peopleEdit.lname">
+    </div>
+    <div style="padding: 1em">
+      <select id="peopleEdit.position_id" [(ngModel)]="peopleEdit.position_id">
+        <option [(value)]="v.position_id" *ngFor="let v of positionRs">{{v.position_name}}</option>
+      </select>
+    </div>
   </div>
   <div class="modal-footer">
-    <button type="button" class="btn btn-outline" (click)="close()">Cancel</button>
-    <button type="button" class="btn btn-primary" (click)="basic = false">Ok</button>
+    <button type="button" class="btn btn-outline" (click)="closeModal()">Cancel</button>
+    <button type="button" class="btn btn-primary" (click)="confirmEditPeople()">OK</button>
   </div>
 </clr-modal>
 <app-loading-modal #modalLoading></app-loading-modal>
