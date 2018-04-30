@@ -206,7 +206,7 @@ export class ImportService {
       });
     });
   }
-  
+
   getUnits(db: IConnection) {
     return new Promise((resolve, reject) => {
       db.query(`SELECT * FROM mm_units`, (error: any, results: any) => {
@@ -223,13 +223,15 @@ export class ImportService {
     });
   }
 
-  getpeople(db: IConnection) {
+  getPeople(db: IConnection) {
     return new Promise((resolve, reject) => {
       db.query(`SELECT
       up.people_id,
+      up.title_id,
       ut.title_name,
       up.fname,
       up.lname,
+      up.position_id,
       upp.position_name
     FROM
       um_people up
@@ -317,7 +319,7 @@ export class ImportService {
       });
     });
   }
-  
+
   deleteTempGenerics(db: IConnection) {
     return new Promise((resolve, reject) => {
       db.query(`DROP TABLE tmp_generics`, (error: any, results: any) => {
@@ -415,6 +417,21 @@ export class ImportService {
           reject(error);
         } else { resolve(results); }
       });
+    });
+  }
+
+  updatePeople(db: IConnection, peopleEdit: any) {
+    return new Promise((resolve, reject) => {
+      db.query(`UPDATE um_people AS up
+      SET up.title_id = '${peopleEdit.title_id}' ,
+      up.fname = '${peopleEdit.fname}' ,
+      up.lname = '${peopleEdit.lname}' ,
+      up.position_id = '${peopleEdit.position_id}'
+      WHERE up.people_id = '${peopleEdit.people_id}';`, (error: any, results: any) => {
+          if (error) {
+            reject(error);
+          } else { resolve(results); }
+        });
     });
   }
 }
