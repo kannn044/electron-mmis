@@ -297,7 +297,7 @@ export class InvsService {
         await this.insert(db, g, sql);
       });
       resolve();
-      console.log('insert done!');
+      console.log(`insert ${name} done!`);
     });
   }
 
