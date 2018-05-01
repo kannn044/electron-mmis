@@ -32,14 +32,18 @@ export class ImportExcelComponent implements OnInit {
   peopleRs: any;
   titleRs: any;
   positionRs: any;
+  labelersRS: any;
   openModal_people = false;
+  openModal_labeler = false;
   peopleEdit = {};
+  lablerEdit = {};
 
   file: any;
   fileName: any;
 
   ngOnInit() {
     this.getpeople();
+    this.getLabelers();
   }
 
   fileChangeEvent(fileInput: any) {
@@ -63,9 +67,9 @@ export class ImportExcelComponent implements OnInit {
 
       const arData: any = [];
       const arData1: any = [];
-      console.log('true', x)
+      console.log('true', x);
       for (let y = 1; y < excelData.length; y++) {
-        let idGenerics = Math.random().toString(15).substr(2, 9);;
+        const idGenerics = Math.random().toString(15).substr(2, 9);
         if (x === 0) {
           const obj = {
             'title_name': excelData[y][0],
@@ -135,10 +139,10 @@ export class ImportExcelComponent implements OnInit {
           arData1.push(obj1);
         }
       }
-      if (x === 0) await this.signPeople(db, arData);
-      if (x === 1) await this.signLabeler(db, arData);
-      if (x === 2) await this.signWareHouses(db, arData);
-      if (x === 3) await this.signGenerics(db, arData, arData1);
+      if (x === 0) { await this.signPeople(db, arData); }
+      if (x === 1) { await this.signLabeler(db, arData); }
+      if (x === 2) { await this.signWareHouses(db, arData); }
+      if (x === 3) { await this.signGenerics(db, arData, arData1); }
     }
     await this.modalLoading.hide();
     await this.getpeople();
@@ -240,37 +244,37 @@ export class ImportExcelComponent implements OnInit {
     await this.importService.createTmpGenerics(db);
     await this.importService.createTmpProducts(db);
 
-    let rsg = await this.importService.importGenerics(db, arData);
-    let rsp = await this.importService.importProducts(db, arData1);
+    const rsg = await this.importService.importGenerics(db, arData);
+    const rsp = await this.importService.importProducts(db, arData1);
 
     if (rsg && rsp) {
       try {
         await this.importService.clearDataUnits(db);
-        let unitNames: any = await this.importService.getUnitsTmp(db);
-        let units = [];
+        const unitNames: any = await this.importService.getUnitsTmp(db);
+        const units = [];
         unitNames.forEach(v => {
           if (v.primary_unit_id !== null) {
             const objUnits = {
               'unit_name': v.primary_unit_id,
               'unit_code': v.primary_unit_id
-            }
+            };
             units.push(objUnits);
           }
         });
 
-        let rsUnits: any = await this.importService.importUnits(db, units);
-        if (!rsUnits) this.alertService.error('ข้อมูลหน่วยเล็กสุดไม่สมบูรณ์')
+        const rsUnits: any = await this.importService.importUnits(db, units);
+        if (!rsUnits) { this.alertService.error('ข้อมูลหน่วยเล็กสุดไม่สมบูรณ์'); }
 
-        let tmpGenericRs: any = await this.importService.getTempGenerics(db);
-        let tmpProductRs: any = await this.importService.getTempProducts(db);
+        const tmpGenericRs: any = await this.importService.getTempGenerics(db);
+        const tmpProductRs: any = await this.importService.getTempProducts(db);
         const AccountRs: any = await this.importService.getGenericAccount(db);
         const typesRs: any = await this.importService.getGenericType(db);
         const unitsRs: any = await this.importService.getUnits(db);
         const labelerRs: any = await this.importService.getLabelers(db);
 
-        let unitGenerics = [];
-        let generics = [];
-        let products = [];
+        const unitGenerics = [];
+        const generics = [];
+        const products = [];
 
         tmpGenericRs.forEach(v => {
           const idxUnitGenerics = _.findIndex(unitsRs, { 'unit_name': v.primary_unit_id });
@@ -296,7 +300,7 @@ export class ImportExcelComponent implements OnInit {
             'unit_cost': v.unit_cost,
             'min_qty': v.min_qty,
             'max_qty': v.max_qty
-          }
+          };
 
           const objUnitGenerics = {
             'from_unit_id': primary_unit_id,
@@ -304,7 +308,7 @@ export class ImportExcelComponent implements OnInit {
             'qty': 1,
             'cost': v.unit_cost,
             'generic_id': v.generic_id
-          }
+          };
 
           generics.push(objGenerics);
           unitGenerics.push(objUnitGenerics);
@@ -316,7 +320,7 @@ export class ImportExcelComponent implements OnInit {
               'qty': v.conversion,
               'cost': v.package_cost,
               'generic_id': v.generic_id
-            })
+            });
           }
         });
 
@@ -338,14 +342,14 @@ export class ImportExcelComponent implements OnInit {
             'primary_unit_id': primary_unit_id,
             'm_labeler_id': m_labeler_id,
             'v_labeler_id': v_labeler_id
-          }
+          };
 
           products.push(objProducts);
         });
 
-        let rsGenerics = await this.importService.insertGenerics(db, generics);
-        let rsProducts = await this.importService.insertProducts(db, products);
-        let rsUnitGenerics = await this.importService.insertUnitGenerics(db, unitGenerics);
+        const rsGenerics = await this.importService.insertGenerics(db, generics);
+        const rsProducts = await this.importService.insertProducts(db, products);
+        const rsUnitGenerics = await this.importService.insertUnitGenerics(db, unitGenerics);
 
         if (rsGenerics && rsUnitGenerics && rsProducts) {
           await this.importService.deleteTempGenerics(db);
@@ -361,6 +365,7 @@ export class ImportExcelComponent implements OnInit {
 
   closeModal() {
     this.openModal_people = false;
+    this.openModal_labeler = false;
   }
 
   async getpeople() {
@@ -372,7 +377,6 @@ export class ImportExcelComponent implements OnInit {
     const db: IConnection = this.connectionService.createConnection('config.json');
     this.titleRs = await this.importService.getTitle(db);
     this.positionRs = await this.importService.getPosition(db);
-    console.log(item);
     this.peopleEdit = {
       'people_id': item.people_id,
       'title_id': item.title_id,
@@ -384,11 +388,35 @@ export class ImportExcelComponent implements OnInit {
   }
 
   async confirmEditPeople() {
-    console.log(this.peopleEdit);
     const db: IConnection = this.connectionService.createConnection('config.json');
     await this.importService.updatePeople(db, this.peopleEdit);
     this.closeModal();
     this.alertService.success();
     this.getpeople();
+  }
+
+  async getLabelers() {
+    const db: IConnection = this.connectionService.createConnection('config.json');
+    this.labelersRS = await this.importService.getLabelers(db);
+  }
+
+  async onEditLabelers(item) {
+    const db: IConnection = this.connectionService.createConnection('config.json');
+    this.lablerEdit = {
+      'labeler_id' : item.labeler_id,
+      'labeler_name': item.labeler_name,
+      'address': item.address,
+      'phone': item.phone
+    };
+    console.log(this.lablerEdit);
+    this.openModal_labeler = true;
+  }
+
+  async confirmEditLabelers() {
+    const db: IConnection = this.connectionService.createConnection('config.json');
+    await this.importService.updateLabelers(db, this.lablerEdit);
+    this.closeModal();
+    this.alertService.success();
+    this.getLabelers();
   }
 }
