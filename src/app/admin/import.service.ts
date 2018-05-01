@@ -242,6 +242,14 @@ export class ImportService {
     });
   }
 
+  getWarehouses(db: IConnection) {
+    return new Promise((resolve, reject) => {
+      db.query(`SELECT * FROM wm_warehouses`, (error: any, results: any) => {
+          resolve(results);
+        });
+    });
+  }
+
   getPosition(db: IConnection) {
     return new Promise((resolve, reject) => {
       db.query(`SELECT * FROM um_positions`, (error: any, results: any) => {
