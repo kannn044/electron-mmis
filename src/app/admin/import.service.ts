@@ -434,4 +434,18 @@ export class ImportService {
         });
     });
   }
+
+  updateLabelers(db: IConnection, lablerEdit: any) {
+    return new Promise((resolve, reject) => {
+      db.query(`UPDATE mm_labelers AS ml
+      SET ml.labeler_name = '${lablerEdit.labeler_name}' ,
+      ml.address = '${lablerEdit.address}' ,
+      ml.phone = '${lablerEdit.phone}'
+      WHERE ml.labeler_id = '${lablerEdit.labeler_id}';`, (error: any, results: any) => {
+          if (error) {
+            reject(error);
+          } else { resolve(results); }
+        });
+    });
+  }
 }
