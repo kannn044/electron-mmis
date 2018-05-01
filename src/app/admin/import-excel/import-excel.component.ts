@@ -38,14 +38,17 @@ export class ImportExcelComponent implements OnInit {
   warehousesRS: any;
   openModal_people = false;
   openModal_labeler = false;
+  openModal_warehouse = false;
   peopleEdit = {};
   lablerEdit = {};
+  warehousesEdit = {};
 
   path: string;
 
   ngOnInit() {
     this.getpeople();
     this.getLabelers();
+    this.getWarehouses();
   }
 
   async downloadFile() {
@@ -363,6 +366,7 @@ export class ImportExcelComponent implements OnInit {
   closeModal() {
     this.openModal_people = false;
     this.openModal_labeler = false;
+    this.openModal_warehouse = false;
   }
 
   async getpeople() {
@@ -427,5 +431,23 @@ export class ImportExcelComponent implements OnInit {
   async getWarehouses() {
     const db: IConnection = this.connectionService.createConnection('config.json');
     this.warehousesRS = await this.importService.getWarehouses(db);
+  }
+
+  async onEditWarehouses(item) {
+    const db: IConnection = this.connectionService.createConnection('config.json');
+    this.warehousesEdit = {
+      'warehouse_id': item.warehouse_id,
+      'warehouse_name': item.warehouse_name
+    };
+    console.log(this.warehousesEdit);
+    this.openModal_warehouse = true;
+  }
+
+  async confirmEditWarehouses() {
+    const db: IConnection = this.connectionService.createConnection('config.json');
+    await this.importService.updateWarehouses(db, this.warehousesEdit);
+    this.closeModal();
+    this.alertService.success();
+    this.getWarehouses();
   }
 }

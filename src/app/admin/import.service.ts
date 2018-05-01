@@ -456,4 +456,16 @@ export class ImportService {
         });
     });
   }
+
+  updateWarehouses(db: IConnection, warehousesEdit: any) {
+    return new Promise((resolve, reject) => {
+      db.query(`UPDATE wm_warehouses AS ww
+      SET ww.warehouse_name = '${warehousesEdit.warehouse_name}'
+      WHERE ww.warehouse_id = '${warehousesEdit.warehouse_id}'`, (error: any, results: any) => {
+          if (error) {
+            reject(error);
+          } else { resolve(results); }
+        });
+    });
+  }
 }

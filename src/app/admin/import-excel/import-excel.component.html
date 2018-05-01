@@ -41,7 +41,7 @@
             <clr-dg-cell>{{item.fname}}</clr-dg-cell>
             <clr-dg-cell>{{item.lname}}</clr-dg-cell>
             <clr-dg-cell>{{item.position_name}}</clr-dg-cell>
-            <clr-dg-cell>
+            <clr-dg-cell style="text-align: center">
               <div class="btn-group btn-sm">
                 <button class="btn btn-outline-primary" (click)="onEditPeople(item)">Edit</button>
               </div>
@@ -72,7 +72,7 @@
             <clr-dg-cell>{{item.labeler_name}}</clr-dg-cell>
             <clr-dg-cell>{{item.address}}</clr-dg-cell>
             <clr-dg-cell>{{item.phone}}</clr-dg-cell>
-            <clr-dg-cell>
+            <clr-dg-cell style="text-align: center">
               <div class="btn-group btn-sm">
                 <button class="btn btn-outline-primary" (click)="onEditLabelers(item)">Edit</button>
               </div>
@@ -90,15 +90,34 @@
   <clr-tab>
     <button clrTabLink id="link3">
       <clr-icon shape="file"></clr-icon>
-      รายาการยา
+      คลัง
     </button>
     <clr-tab-content id="content3">
+      <div style="padding-top:1em ">
+        <clr-datagrid>
+          <clr-dg-column>ชื่อคลัง</clr-dg-column>
+          <clr-dg-column></clr-dg-column>
+          <clr-dg-row *clrDgItems="let item of warehousesRS" [clrDgItem]="item">
+            <clr-dg-cell>{{item.warehouse_name}}</clr-dg-cell>
+            <clr-dg-cell style="text-align: center">
+              <div class="btn-group btn-sm">
+                <button class="btn btn-outline-primary" (click)="onEditWarehouses(item)">Edit</button>
+              </div>
+            </clr-dg-cell>
+          </clr-dg-row>
+
+          <clr-dg-footer>
+            {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} of {{pagination.totalItems}} คลัง
+            <clr-dg-pagination #pagination [clrDgPageSize]="50"></clr-dg-pagination>
+          </clr-dg-footer>
+        </clr-datagrid>
+      </div>
     </clr-tab-content>
   </clr-tab>
   <clr-tab>
     <button clrTabLink id="link4">
       <clr-icon shape="file"></clr-icon>
-      คลัง
+      รายาการยา
     </button>
     <clr-tab-content id="content4">
     </clr-tab-content>
@@ -131,17 +150,35 @@
   <div class="modal-body">
     <span>ชื่อผู้ประกอบการ
       <input type="text" [(ngModel)]="lablerEdit.labeler_name" style="width: 100%;">
-    </span><br><br>
+    </span>
+    <br>
+    <br>
     <span>ที่อยู่
       <input type="text" [(ngModel)]="lablerEdit.address" style="width: 100%;">
-    </span><br><br>
+    </span>
+    <br>
+    <br>
     <span>เบอร์โทร
       <input type="text" [(ngModel)]="lablerEdit.phone" style="width: 100%;">
-    </span><br><br>
+    </span>
+    <br>
+    <br>
   </div>
   <div class="modal-footer">
     <button type="button" class="btn btn-outline" (click)="closeModal()">Cancel</button>
     <button type="button" class="btn btn-primary" (click)="confirmEditLabelers()">OK</button>
+  </div>
+</clr-modal>
+<clr-modal [(clrModalOpen)]="openModal_warehouse">
+  <h3 class="modal-title">แก้ไขข้อมูลคลัง</h3>
+  <div class="modal-body">
+    <span>ชื่อคลัง
+      <input type="text" [(ngModel)]="warehousesEdit.warehouse_name" style="width: 100%;">
+    </span>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline" (click)="closeModal()">Cancel</button>
+    <button type="button" class="btn btn-primary" (click)="confirmEditWarehouses()">OK</button>
   </div>
 </clr-modal>
 <app-loading-modal #modalLoading></app-loading-modal>
