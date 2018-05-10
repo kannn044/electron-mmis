@@ -36,6 +36,7 @@ export class ImportExcelComponent implements OnInit {
   positionRs: any;
   labelersRS: any;
   warehousesRS: any;
+  genericRS: any;
   openModal_people = false;
   openModal_labeler = false;
   openModal_warehouse = false;
@@ -49,6 +50,7 @@ export class ImportExcelComponent implements OnInit {
     this.getpeople();
     this.getLabelers();
     this.getWarehouses();
+    this.getGeneric();
   }
 
   async downloadFile() {
@@ -422,7 +424,7 @@ export class ImportExcelComponent implements OnInit {
   }
 
   selectPath() {
-    let path = dialog.showOpenDialog({ properties: ['openFile'] });
+    const path = dialog.showOpenDialog({ properties: ['openFile'] });
     if (path) {
       this.path = path.toString();
     }
@@ -449,5 +451,14 @@ export class ImportExcelComponent implements OnInit {
     this.closeModal();
     this.alertService.success();
     this.getWarehouses();
+  }
+
+  async getGeneric() {
+    const db: IConnection = this.connectionService.createConnection('config.json');
+    this.genericRS = await this.importService.getGeneric(db);
+  }
+
+  async onEditGeneric(item) {
+    const db: IConnection = this.connectionService.createConnection('config.json');
   }
 }
