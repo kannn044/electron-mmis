@@ -117,9 +117,46 @@
   <clr-tab>
     <button clrTabLink id="link4">
       <clr-icon shape="file"></clr-icon>
-      รายาการยา
+      รายการยา
     </button>
     <clr-tab-content id="content4">
+      <div style="padding-top:1em ">
+        <clr-datagrid>
+          <clr-dg-column>Generic Name</clr-dg-column>
+          <clr-dg-column>Product Name</clr-dg-column>
+          <clr-dg-column>ชนิด</clr-dg-column>
+          <clr-dg-column>ประเภท</clr-dg-column>
+          <clr-dg-column>หน่วยใหญ่</clr-dg-column>
+          <clr-dg-column>conversion</clr-dg-column>
+          <clr-dg-column>หน่วยเล็ก</clr-dg-column>
+          <clr-dg-column>ราคาต่อหน่วย</clr-dg-column>
+          <clr-dg-column>ราคาต่อแพ็ค</clr-dg-column>
+          <clr-dg-column>ราคากลาง</clr-dg-column>
+          <clr-dg-column></clr-dg-column>
+          <clr-dg-row *clrDgItems="let item of genericRS" [clrDgItem]="item">
+            <clr-dg-cell>{{item.generic_name}}</clr-dg-cell>
+            <clr-dg-cell>{{item.product_name}}</clr-dg-cell>
+            <clr-dg-cell>{{item.account_name}}</clr-dg-cell>
+            <clr-dg-cell>{{item.generic_type_name}}</clr-dg-cell>
+            <clr-dg-cell>{{item.large_unit}}</clr-dg-cell>
+            <clr-dg-cell>{{item.qty}}</clr-dg-cell>
+            <clr-dg-cell>{{item.small_unit}}</clr-dg-cell>
+            <clr-dg-cell>{{item.unit_cost}}</clr-dg-cell>
+            <clr-dg-cell>{{item.cost}}</clr-dg-cell>
+            <clr-dg-cell>{{item.standard_cost}}</clr-dg-cell>
+            <clr-dg-cell style="text-align: center">
+              <div class="btn-group btn-sm">
+                <button class="btn btn-outline-primary" (click)="onEditGeneric(item)">Edit</button>
+              </div>
+            </clr-dg-cell>
+          </clr-dg-row>
+
+          <clr-dg-footer>
+            {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} of {{pagination.totalItems}} รายการยา
+            <clr-dg-pagination #pagination [clrDgPageSize]="50"></clr-dg-pagination>
+          </clr-dg-footer>
+        </clr-datagrid>
+      </div>
     </clr-tab-content>
   </clr-tab>
 </clr-tabs>
