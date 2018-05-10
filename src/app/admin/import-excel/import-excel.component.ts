@@ -45,6 +45,10 @@ export class ImportExcelComponent implements OnInit {
 
   path: string;
 
+  rs1: boolean;
+  rs2: boolean;
+  rs3: boolean;
+  rs4: boolean;
   ngOnInit() {
     this.getpeople();
     this.getLabelers();
@@ -86,9 +90,9 @@ export class ImportExcelComponent implements OnInit {
             'description': excelData[y][1],
             'nin': excelData[y][2],
             'address': excelData[y][3],
-            'tambon_code': excelData[y][4].split(' '),
-            'ampur_code': excelData[y][5].split(' '),
-            'province_code': excelData[y][6].split(' '),
+            'tambon_code': excelData[y][4],
+            'ampur_code': excelData[y][5],
+            'province_code': excelData[y][6],
             'zipcode': excelData[y][7],
             'phone': excelData[y][8],
             'labeler_type': excelData[y][9],
@@ -139,12 +143,13 @@ export class ImportExcelComponent implements OnInit {
           arData1.push(obj1);
         }
       }
-      if (x === 0) { await this.signPeople(db, arData); }
-      if (x === 1) { await this.signLabeler(db, arData); }
-      if (x === 2) { await this.signWareHouses(db, arData); }
-      if (x === 3) { await this.signGenerics(db, arData, arData1); }
+      if (x === 0) { this.rs1 = await this.signPeople(db, arData); }
+      if (x === 1) { this.rs2 = await this.signLabeler(db, arData); }
+      if (x === 2) { this.rs3 = await this.signWareHouses(db, arData); }
+      if (x === 3) { this.rs4 = await this.signGenerics(db, arData, arData1); }
     }
-    await this.modalLoading.hide();
+    if (this.rs1 && this.rs2 && this.rs3 && this.rs4) await this.modalLoading.hide();
+    else if (!this.rs1 && !this.rs2 && !this.rs3 && !this.rs4) await this.alertService.error();
     await this.getpeople();
     await db.end();
   }
@@ -186,13 +191,14 @@ export class ImportExcelComponent implements OnInit {
           'is_manufacturer': 'Y',
           'short_code': v.description
         };
-        labeler.push(objLabeler);
+        if (v.labeler_name !== null) labeler.push(objLabeler);
       });
-
       await this.importService.insertLabeler(db, labeler);
       await this.importService.deleteTempLabeler(db);
+      return true;
     } else {
       this.alertService.error();
+      return false;
     }
   }
 
@@ -219,13 +225,15 @@ export class ImportExcelComponent implements OnInit {
           'lname': v.lname,
           'position_id': position_id
         };
-        peoples.push(objPeoples);
+        if (v.fname !== null) peoples.push(objPeoples);
       });
 
       await this.importService.insertPeople(db, peoples);
       await this.importService.deleteTempPeople(db);
+      return true;
     } else {
       this.alertService.error();
+      return false;
     }
   }
 
@@ -233,7 +241,8 @@ export class ImportExcelComponent implements OnInit {
     await this.importService.clearDataWareHouse(db);
     const importData: any = await this.importService.importWareHouses(db, arData);
 
-    if (!importData) { this.alertService.error(); }
+    if (!importData) { this.alertService.error(); return false; }
+    return true;
   }
 
   async signGenerics(db: IConnection, arData: any, arData1: any) {
@@ -309,7 +318,6 @@ export class ImportExcelComponent implements OnInit {
             'cost': v.unit_cost,
             'generic_id': v.generic_id
           };
-
           generics.push(objGenerics);
           unitGenerics.push(objUnitGenerics);
 
@@ -343,7 +351,7 @@ export class ImportExcelComponent implements OnInit {
             'm_labeler_id': m_labeler_id,
             'v_labeler_id': v_labeler_id
           };
-
+          
           products.push(objProducts);
         });
 
@@ -354,11 +362,14 @@ export class ImportExcelComponent implements OnInit {
         if (rsGenerics && rsUnitGenerics && rsProducts) {
           await this.importService.deleteTempGenerics(db);
           await this.importService.deleteTempProducts(db);
+          return true;
         } else {
           this.alertService.error();
+          return false;
         }
       } catch (error) {
         this.alertService.error(error.message);
+        return false;
       }
     }
   }

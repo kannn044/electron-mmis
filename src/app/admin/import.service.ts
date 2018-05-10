@@ -36,6 +36,16 @@ export class ImportService {
     return true;
   }
 
+  createTmpWmProducts(db: IConnection) {
+    const sql = `CREATE TABLE tmp_wm_products (product_id int NOT NULL AUTO_INCREMENT,warehouse_name varchar(255),product_id varchar(255),remain_qty int(10),cost int(10),lot_no varchar(255),unit_generic_id varchar(255),PRIMARY KEY(product_id))`;
+    db.query(sql, function (error, results, fields) {
+      if (error) {
+        throw error;
+      }
+    });
+    return true;
+  }
+
   createTmpLabeler(db: IConnection) {
     const sql = `CREATE TABLE tmp_labelers (id int NOT NULL AUTO_INCREMENT,labeler_name varchar(255),description varchar(255),nin varchar(255),labeler_type varchar(255),labeler_status varchar(255),address varchar(255),tambon_code varchar(255),ampur_code varchar(255),province_code varchar(255),zipcode varchar(255),phone varchar(255),PRIMARY KEY (id))`;
 
@@ -401,6 +411,16 @@ export class ImportService {
   clearDataProducts(db: IConnection) {
     return new Promise((resolve, reject) => {
       db.query(`TRUNCATE TABLE mm_products`, (error: any, results: any) => {
+        if (error) {
+          reject(error);
+        } else { resolve(results); }
+      });
+    });
+  }
+
+  clearDataWmProducts(db: IConnection) {
+    return new Promise((resolve, reject) => {
+      db.query(`TRUNCATE TABLE wm_products`, (error: any, results: any) => {
         if (error) {
           reject(error);
         } else { resolve(results); }
