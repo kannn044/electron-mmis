@@ -46,10 +46,9 @@ export class InvsSyncComponent implements OnInit {
       await dbInv.end();
       await dbMmis.end();
       this.modalLoading.hide(6000);
-      console.log('close');
       this.isSave = false;
     } catch (error) {
-      this.modalLoading.hide(6000);
+      this.modalLoading.hide();
       this.isSave = false;
       // this.loading = false;
     }
