@@ -207,6 +207,44 @@ export class ImportService {
     });
   }
 
+  getGeneric(db: IConnection) {
+    return new Promise((resolve, reject) => {
+      db.query(`SELECT
+      mg.generic_name,
+      mp.product_name,
+      mp.working_code,
+      mga.account_name,
+      mgt.generic_type_name,
+      mul.unit_name AS large_unit,
+      mug.qty,
+      mus.unit_name AS small_unit,
+      mg.standard_cost,
+      mg.unit_cost,
+      mug.cost,
+      mg.min_qty,
+      mg.max_qty,
+      mlm.labeler_name AS mlm,
+      mlv.labeler_name AS mlv
+    FROM
+      mm_products mp
+    JOIN mm_generics mg ON mg.generic_id = mp.generic_id
+    LEFT JOIN mm_generic_types mgt ON mgt.generic_type_id = mg.generic_type_id
+    LEFT JOIN mm_generic_accounts mga ON mga.account_id = mg.account_id
+    LEFT JOIN mm_unit_generics mug ON mug.generic_id = mg.generic_id
+    LEFT JOIN mm_units mus ON mus.unit_id = mug.to_unit_id
+    LEFT JOIN mm_units mul ON mul.unit_id = mug.from_unit_id
+    LEFT JOIN mm_labelers mlv ON mlv.labeler_id = mp.v_labeler_id
+    LEFT JOIN mm_labelers mlm ON mlm.labeler_id = mp.m_labeler_id
+    GROUP BY
+      mg.generic_name
+    ORDER BY
+      mgt.generic_type_id,
+      mg.generic_name`, (error: any, results: any) => {
+        resolve(results);
+      });
+    });
+  }
+
   getUnits(db: IConnection) {
     return new Promise((resolve, reject) => {
       db.query(`SELECT * FROM mm_units`, (error: any, results: any) => {
@@ -237,6 +275,14 @@ export class ImportService {
       um_people up
     JOIN um_titles ut ON ut.title_id = up.title_id
     JOIN um_positions upp ON upp.position_id = up.position_id`, (error: any, results: any) => {
+          resolve(results);
+        });
+    });
+  }
+
+  getWarehouses(db: IConnection) {
+    return new Promise((resolve, reject) => {
+      db.query(`SELECT * FROM wm_warehouses`, (error: any, results: any) => {
           resolve(results);
         });
     });
@@ -442,6 +488,18 @@ export class ImportService {
       ml.address = '${lablerEdit.address}' ,
       ml.phone = '${lablerEdit.phone}'
       WHERE ml.labeler_id = '${lablerEdit.labeler_id}';`, (error: any, results: any) => {
+          if (error) {
+            reject(error);
+          } else { resolve(results); }
+        });
+    });
+  }
+
+  updateWarehouses(db: IConnection, warehousesEdit: any) {
+    return new Promise((resolve, reject) => {
+      db.query(`UPDATE wm_warehouses AS ww
+      SET ww.warehouse_name = '${warehousesEdit.warehouse_name}'
+      WHERE ww.warehouse_id = '${warehousesEdit.warehouse_id}'`, (error: any, results: any) => {
           if (error) {
             reject(error);
           } else { resolve(results); }

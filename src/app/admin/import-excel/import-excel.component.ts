@@ -6,7 +6,7 @@ import { IConnection } from 'mysql';
 import { AlertService } from '../../alert.service';
 import { ImportService } from '../../admin/import.service';
 
-const {dialog} = require('electron').remote
+const { dialog } = require('electron').remote
 
 import xlsx from 'node-xlsx';
 
@@ -35,22 +35,22 @@ export class ImportExcelComponent implements OnInit {
   titleRs: any;
   positionRs: any;
   labelersRS: any;
+  warehousesRS: any;
+  genericRS: any;
   openModal_people = false;
   openModal_labeler = false;
+  openModal_warehouse = false;
   peopleEdit = {};
   lablerEdit = {};
+  warehousesEdit = {};
 
-  file: any;
-  fileName: any;
+  path: string;
 
   ngOnInit() {
     this.getpeople();
     this.getLabelers();
-  }
-
-  fileChangeEvent(fileInput: any) {
-    this.file = <Array<File>>fileInput.target.files;
-    this.fileName = this.file[0].name;
+    this.getWarehouses();
+    this.getGeneric();
   }
 
   async downloadFile() {
@@ -62,14 +62,14 @@ export class ImportExcelComponent implements OnInit {
     db.connect();
 
     const targetDir = path.join(os.homedir());
-    const workSheetsFromFile = xlsx.parse(fs.readFileSync(`${targetDir}/template.xlsx`));
+    const workSheetsFromFile = xlsx.parse(fs.readFileSync(this.path));
     this.modalLoading.show();
     for (let x = 0; x < workSheetsFromFile.length; x++) {
       const excelData = workSheetsFromFile[x].data;
 
       const arData: any = [];
       const arData1: any = [];
-    
+
       for (let y = 1; y < excelData.length; y++) {
         const idGenerics = Math.random().toString(15).substr(2, 9);
         if (x === 0) {
@@ -368,6 +368,7 @@ export class ImportExcelComponent implements OnInit {
   closeModal() {
     this.openModal_people = false;
     this.openModal_labeler = false;
+    this.openModal_warehouse = false;
   }
 
   async getpeople() {
@@ -405,7 +406,7 @@ export class ImportExcelComponent implements OnInit {
   async onEditLabelers(item) {
     const db: IConnection = this.connectionService.createConnection('config.json');
     this.lablerEdit = {
-      'labeler_id' : item.labeler_id,
+      'labeler_id': item.labeler_id,
       'labeler_name': item.labeler_name,
       'address': item.address,
       'phone': item.phone
@@ -423,9 +424,41 @@ export class ImportExcelComponent implements OnInit {
   }
 
   selectPath() {
-    let path = dialog.showOpenDialog({properties: ['openFile']});
+    const path = dialog.showOpenDialog({ properties: ['openFile'] });
     if (path) {
-      console.log(path);
+      this.path = path.toString();
     }
+  }
+
+  async getWarehouses() {
+    const db: IConnection = this.connectionService.createConnection('config.json');
+    this.warehousesRS = await this.importService.getWarehouses(db);
+  }
+
+  async onEditWarehouses(item) {
+    const db: IConnection = this.connectionService.createConnection('config.json');
+    this.warehousesEdit = {
+      'warehouse_id': item.warehouse_id,
+      'warehouse_name': item.warehouse_name
+    };
+    console.log(this.warehousesEdit);
+    this.openModal_warehouse = true;
+  }
+
+  async confirmEditWarehouses() {
+    const db: IConnection = this.connectionService.createConnection('config.json');
+    await this.importService.updateWarehouses(db, this.warehousesEdit);
+    this.closeModal();
+    this.alertService.success();
+    this.getWarehouses();
+  }
+
+  async getGeneric() {
+    const db: IConnection = this.connectionService.createConnection('config.json');
+    this.genericRS = await this.importService.getGeneric(db);
+  }
+
+  async onEditGeneric(item) {
+    const db: IConnection = this.connectionService.createConnection('config.json');
   }
 }
