@@ -35,7 +35,7 @@
           <clr-dg-column>ชื่อ</clr-dg-column>
           <clr-dg-column>นามสกุล</clr-dg-column>
           <clr-dg-column>ตำแหน่ง</clr-dg-column>
-          <clr-dg-column></clr-dg-column>
+          <clr-dg-column>แก้ไข</clr-dg-column>
           <clr-dg-row *clrDgItems="let item of peopleRs" [clrDgItem]="item">
             <clr-dg-cell>{{item.title_name}}</clr-dg-cell>
             <clr-dg-cell>{{item.fname}}</clr-dg-cell>
@@ -67,7 +67,7 @@
           <clr-dg-column>ชื่อผู้ประกอบการ</clr-dg-column>
           <clr-dg-column>ที่อยู่</clr-dg-column>
           <clr-dg-column>เบอร์โทร</clr-dg-column>
-          <clr-dg-column></clr-dg-column>
+          <clr-dg-column>แก้ไข</clr-dg-column>
           <clr-dg-row *clrDgItems="let item of labelersRS" [clrDgItem]="item">
             <clr-dg-cell>{{item.labeler_name}}</clr-dg-cell>
             <clr-dg-cell>{{item.address}}</clr-dg-cell>
@@ -96,7 +96,7 @@
       <div style="padding-top:1em ">
         <clr-datagrid>
           <clr-dg-column>ชื่อคลัง</clr-dg-column>
-          <clr-dg-column></clr-dg-column>
+          <clr-dg-column>แก้ไข</clr-dg-column>
           <clr-dg-row *clrDgItems="let item of warehousesRS" [clrDgItem]="item">
             <clr-dg-cell>{{item.warehouse_name}}</clr-dg-cell>
             <clr-dg-cell style="text-align: center">
@@ -124,31 +124,29 @@
         <clr-datagrid>
           <clr-dg-column>Generic Name</clr-dg-column>
           <clr-dg-column>Product Name</clr-dg-column>
-          <clr-dg-column>ชนิด</clr-dg-column>
-          <clr-dg-column>ประเภท</clr-dg-column>
           <clr-dg-column>หน่วยใหญ่</clr-dg-column>
           <clr-dg-column>conversion</clr-dg-column>
           <clr-dg-column>หน่วยเล็ก</clr-dg-column>
           <clr-dg-column>ราคาต่อหน่วย</clr-dg-column>
           <clr-dg-column>ราคาต่อแพ็ค</clr-dg-column>
-          <clr-dg-column>ราคากลาง</clr-dg-column>
-          <clr-dg-column></clr-dg-column>
+          <clr-dg-column>คงคลัง</clr-dg-column>
+          <clr-dg-column>คลัง</clr-dg-column>
+          <!-- <clr-dg-column>แก้ไข</clr-dg-column> -->
           <clr-dg-row *clrDgItems="let item of genericRS" [clrDgItem]="item">
             <clr-dg-cell>{{item.generic_name}}</clr-dg-cell>
             <clr-dg-cell>{{item.product_name}}</clr-dg-cell>
-            <clr-dg-cell>{{item.account_name}}</clr-dg-cell>
-            <clr-dg-cell>{{item.generic_type_name}}</clr-dg-cell>
             <clr-dg-cell>{{item.large_unit}}</clr-dg-cell>
             <clr-dg-cell>{{item.qty}}</clr-dg-cell>
             <clr-dg-cell>{{item.small_unit}}</clr-dg-cell>
             <clr-dg-cell>{{item.unit_cost}}</clr-dg-cell>
             <clr-dg-cell>{{item.cost}}</clr-dg-cell>
-            <clr-dg-cell>{{item.standard_cost}}</clr-dg-cell>
-            <clr-dg-cell style="text-align: center">
+            <clr-dg-cell>{{item.remain_qty}} ({{item.small_unit}})</clr-dg-cell>
+            <clr-dg-cell>{{item.warehouse_name}}</clr-dg-cell>
+            <!-- <clr-dg-cell style="text-align: center">
               <div class="btn-group btn-sm">
                 <button class="btn btn-outline-primary" (click)="onEditGeneric(item)">Edit</button>
               </div>
-            </clr-dg-cell>
+            </clr-dg-cell> -->
           </clr-dg-row>
 
           <clr-dg-footer>
@@ -218,4 +216,22 @@
     <button type="button" class="btn btn-primary" (click)="confirmEditWarehouses()">OK</button>
   </div>
 </clr-modal>
+<!-- 
+<clr-modal [(clrModalOpen)]="openModal_generics">
+  <h3 class="modal-title">แก้ไขข้อมูลยา</h3>
+  <div class="modal-body">
+    <span>ชื่อยาสามัญ
+      <input type="text" [(ngModel)]="warehousesEdit.warehouse_name" style="width: 100%;">
+    </span>
+  </div>
+  <div class="modal-body">
+    <span>ชื่อทางการค้า
+      <input type="text" [(ngModel)]="warehousesEdit.warehouse_name" style="width: 100%;">
+    </span>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline" (click)="closeModal()">Cancel</button>
+    <button type="button" class="btn btn-primary" (click)="confirmEditGenerics()">OK</button>
+  </div>
+</clr-modal> -->
 <app-loading-modal #modalLoading></app-loading-modal>

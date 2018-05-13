@@ -40,6 +40,7 @@ export class ImportExcelComponent implements OnInit {
   openModal_people = false;
   openModal_labeler = false;
   openModal_warehouse = false;
+  openModal_generics = false;
   peopleEdit = {};
   lablerEdit = {};
   warehousesEdit = {};
@@ -58,101 +59,123 @@ export class ImportExcelComponent implements OnInit {
   }
 
   async downloadFile() {
-
+    const db: IConnection = this.connectionService.createConnection('config.json');
+    this.importService.deleteTempGenerics(db);
+    this.importService.deleteTempProducts(db);
+    this.importService.deleteTempPeople(db);
+    this.importService.deleteTempLabeler(db);
   }
 
   async importExcel() {
     const db: IConnection = this.connectionService.createConnection('config.json');
     db.connect();
 
-    const targetDir = path.join(os.homedir());
-    const workSheetsFromFile = xlsx.parse(fs.readFileSync(this.path));
-    this.modalLoading.show();
-    for (let x = 0; x < workSheetsFromFile.length; x++) {
-      const excelData = workSheetsFromFile[x].data;
+    if (this.path) {
 
-      const arData: any = [];
-      const arData1: any = [];
+      const targetDir = path.join(os.homedir());
+      const workSheetsFromFile = xlsx.parse(fs.readFileSync(this.path));
+      this.modalLoading.show();
+      for (let x = 0; x < workSheetsFromFile.length; x++) {
+        const excelData = workSheetsFromFile[x].data;
 
-      for (let y = 1; y < excelData.length; y++) {
-        const idGenerics = Math.random().toString(15).substr(2, 9);
-        if (x === 0) {
-          const obj = {
-            'title_name': excelData[y][0],
-            'fname': excelData[y][1],
-            'lname': excelData[y][2],
-            'position_name': excelData[y][3]
-          };
-          arData.push(obj);
+        const arData: any = [];
+        const arData1: any = [];
+
+        for (let y = 1; y < excelData.length; y++) {
+          const idGenerics = Math.random().toString(15).substr(2, 9);
+          if (x === 0) {
+            const obj = {
+              'title_name': excelData[y][0],
+              'fname': excelData[y][1],
+              'lname': excelData[y][2],
+              'position_name': excelData[y][3]
+            };
+            arData.push(obj);
+          }
+
+          if (x === 1) {
+            const obj = {
+              'labeler_name': excelData[y][0],
+              'description': excelData[y][1],
+              'nin': excelData[y][2],
+              'address': excelData[y][3],
+              'tambon_code': excelData[y][4],
+              'ampur_code': excelData[y][5],
+              'province_code': excelData[y][6],
+              'zipcode': excelData[y][7],
+              'phone': excelData[y][8],
+              'labeler_type': excelData[y][9],
+              'labeler_status': '1'
+            };
+            arData.push(obj);
+          }
+
+          if (x === 2) {
+            const obj = {
+              'warehouse_id': excelData[y][0],
+              'warehouse_name': excelData[y][1],
+              'location': excelData[y][2],
+              'short_code': excelData[y][2],
+              'his_hospcode': excelData[y][3],
+              'his_dep_code': excelData[y][4],
+            };
+            arData.push(obj);
+          }
+
+          if (x === 3) {
+            excelData[y][2] === undefined ? excelData[y][2] = idGenerics : excelData[y][2] = excelData[y][2];
+            const obj = {
+              'generic_id': excelData[y][2],
+              'generic_name': excelData[y][0],
+              'working_code': excelData[y][2],
+              'account_id': excelData[y][3],
+              'generic_type_id': excelData[y][4],
+              'package': excelData[y][5],
+              'conversion': excelData[y][6],
+              'primary_unit_id': excelData[y][7],
+              'standard_cost': excelData[y][8],
+              'unit_cost': excelData[y][9],
+              'package_cost': excelData[y][10],
+              'min_qty': excelData[y][11],
+              'max_qty': excelData[y][12],
+            };
+
+            const obj1 = {
+              'product_name': excelData[y][1],
+              'working_code': excelData[y][2],
+              'generic_id': excelData[y][2],
+              'primary_unit_id': excelData[y][7],
+              'm_labeler_id': excelData[y][13],
+              'v_labeler_id': excelData[y][14],
+              'remain_qty': excelData[y][15],
+              'warehouse_name': excelData[y][16],
+              'tmt_id': excelData[y][17]
+            };
+            arData.push(obj);
+            arData1.push(obj1);
+          }
         }
-
-        if (x === 1) {
-          const obj = {
-            'labeler_name': excelData[y][0],
-            'description': excelData[y][1],
-            'nin': excelData[y][2],
-            'address': excelData[y][3],
-            'tambon_code': excelData[y][4],
-            'ampur_code': excelData[y][5],
-            'province_code': excelData[y][6],
-            'zipcode': excelData[y][7],
-            'phone': excelData[y][8],
-            'labeler_type': excelData[y][9],
-            'labeler_status': '1'
-          };
-          arData.push(obj);
-        }
-
-        if (x === 2) {
-          const obj = {
-            'warehouse_id': excelData[y][0],
-            'warehouse_name': excelData[y][1],
-            'location': excelData[y][2],
-            'short_code': excelData[y][2],
-            'his_hospcode': excelData[y][3],
-            'his_dep_code': excelData[y][4],
-          };
-          arData.push(obj);
-        }
-
-        if (x === 3) {
-          excelData[y][2] === undefined ? excelData[y][2] = idGenerics : excelData[y][2] = excelData[y][2];
-          const obj = {
-            'generic_id': excelData[y][2],
-            'generic_name': excelData[y][0],
-            'working_code': excelData[y][2],
-            'account_id': excelData[y][3],
-            'generic_type_id': excelData[y][4],
-            'package': excelData[y][5],
-            'conversion': excelData[y][6],
-            'primary_unit_id': excelData[y][7],
-            'standard_cost': excelData[y][8],
-            'unit_cost': excelData[y][9],
-            'package_cost': excelData[y][10],
-            'min_qty': excelData[y][11],
-            'max_qty': excelData[y][12],
-          };
-
-          const obj1 = {
-            'product_name': excelData[y][1],
-            'working_code': excelData[y][2],
-            'generic_id': excelData[y][2],
-            'primary_unit_id': excelData[y][7],
-            'm_labeler_id': excelData[y][13],
-            'v_labeler_id': excelData[y][14],
-          };
-          arData.push(obj);
-          arData1.push(obj1);
-        }
+        if (x === 0) { this.rs1 = await this.signPeople(db, arData); }
+        if (x === 1) { this.rs2 = await this.signLabeler(db, arData); }
+        if (x === 2) { this.rs3 = await this.signWareHouses(db, arData); }
+        if (x === 3) { this.rs4 = await this.signGenerics(db, arData, arData1); }
       }
-      if (x === 0) { this.rs1 = await this.signPeople(db, arData); }
-      if (x === 1) { this.rs2 = await this.signLabeler(db, arData); }
-      if (x === 2) { this.rs3 = await this.signWareHouses(db, arData); }
-      if (x === 3) { this.rs4 = await this.signGenerics(db, arData, arData1); }
+    } else {
+      this.alertService.error('กรุณาเลือกไฟล์');
     }
-    if (this.rs1 && this.rs2 && this.rs3 && this.rs4) await this.modalLoading.hide();
-    else if (!this.rs1 && !this.rs2 && !this.rs3 && !this.rs4) await this.alertService.error();
-    await this.getpeople();
+
+    if (this.rs1 && this.rs2 && this.rs3 && this.rs4) {
+      await this.getpeople();
+      await this.getLabelers();
+      await this.getWarehouses();
+      await this.getGeneric();
+      await this.modalLoading.hide();
+      await this.alertService.success();
+    } else {
+      await this.modalLoading.hide();
+      await this.alertService.error('นำเข้าข้อมูลไม่สำเร็จ โปรดตรวจสอบไฟล์นำเข้า');
+    }
+    await this.modalLoading.hide();
     await db.end();
   }
 
@@ -227,11 +250,11 @@ export class ImportExcelComponent implements OnInit {
           'lname': v.lname,
           'position_id': position_id
         };
-        if (v.fname !== null) peoples.push(objPeoples);
+        peoples.push(objPeoples);
       });
 
-      await this.importService.insertPeople(db, peoples);
       await this.importService.deleteTempPeople(db);
+      await this.importService.insertPeople(db, peoples);
       return true;
     } else {
       this.alertService.error();
@@ -250,6 +273,7 @@ export class ImportExcelComponent implements OnInit {
   async signGenerics(db: IConnection, arData: any, arData1: any) {
     await this.importService.clearDataGenerics(db);
     await this.importService.clearDataProducts(db);
+    await this.importService.clearDataWmProducts(db);
     await this.importService.clearDataUnitGenerics(db);
 
     await this.importService.createTmpGenerics(db);
@@ -286,6 +310,7 @@ export class ImportExcelComponent implements OnInit {
         const unitGenerics = [];
         const generics = [];
         const products = [];
+        const wmProducts = [];
 
         tmpGenericRs.forEach(v => {
           const idxUnitGenerics = _.findIndex(unitsRs, { 'unit_name': v.primary_unit_id });
@@ -350,10 +375,11 @@ export class ImportExcelComponent implements OnInit {
             'working_code': v.working_code,
             'generic_id': v.generic_id,
             'primary_unit_id': primary_unit_id,
+            'tmt_id': v.tmt_id,
             'm_labeler_id': m_labeler_id,
             'v_labeler_id': v_labeler_id
           };
-          
+
           products.push(objProducts);
         });
 
@@ -362,6 +388,28 @@ export class ImportExcelComponent implements OnInit {
         const rsUnitGenerics = await this.importService.insertUnitGenerics(db, unitGenerics);
 
         if (rsGenerics && rsUnitGenerics && rsProducts) {
+          const unitGernericRs: any = await this.importService.getUnitGenericsId(db);
+          const warehousesRS: any = await this.importService.getWarehouses(db);
+
+          tmpProductRs.forEach(v => {
+            const idxWH = _.findIndex(warehousesRS, { 'warehouse_name': v.warehouse_name });
+            const warehouse_id = idxWH > -1 ? warehousesRS[idxWH].warehouse_id : null;
+
+            const idxUnitGenericsId = _.findIndex(unitGernericRs, { 'product_name': v.product_name });
+            const unit_generic_id = idxUnitGenericsId > -1 ? unitGernericRs[idxUnitGenericsId].unit_generic_id : null;
+
+            const objwmProducts = {
+              'wm_product_id': Math.random().toString(20).substr(2, 15),
+              'warehouse_id': warehouse_id,
+              'product_id': v.product_id,
+              'qty': v.remain_qty,
+              'lot_no': Math.random().toString(6).substr(2, 9),
+              'unit_generic_id': unit_generic_id
+            };
+            wmProducts.push(objwmProducts);
+          });
+
+          await this.importService.insertWmProducts(db, wmProducts);
           await this.importService.deleteTempGenerics(db);
           await this.importService.deleteTempProducts(db);
           return true;
@@ -380,6 +428,7 @@ export class ImportExcelComponent implements OnInit {
     this.openModal_people = false;
     this.openModal_labeler = false;
     this.openModal_warehouse = false;
+    this.openModal_generics = false;
   }
 
   async getpeople() {
@@ -422,7 +471,6 @@ export class ImportExcelComponent implements OnInit {
       'address': item.address,
       'phone': item.phone
     };
-    console.log(this.lablerEdit);
     this.openModal_labeler = true;
   }
 
@@ -452,16 +500,35 @@ export class ImportExcelComponent implements OnInit {
       'warehouse_id': item.warehouse_id,
       'warehouse_name': item.warehouse_name
     };
-    console.log(this.warehousesEdit);
     this.openModal_warehouse = true;
   }
 
   async confirmEditWarehouses() {
     const db: IConnection = this.connectionService.createConnection('config.json');
-    await this.importService.updateWarehouses(db, this.warehousesEdit);
-    this.closeModal();
-    this.alertService.success();
-    this.getWarehouses();
+    this.importService.updateWarehouses(db, this.warehousesEdit)
+      .then(() => {
+        this.closeModal();
+        this.alertService.success();
+        this.getWarehouses();
+      })
+      .catch((error) => {
+        this.alertService.error();
+        console.log(error.message);
+      })
+  }
+
+  async confirmEditGenerics() {
+    const db: IConnection = this.connectionService.createConnection('config.json');
+    this.importService.updateWarehouses(db, this.warehousesEdit)
+      .then(() => {
+        this.closeModal();
+        this.alertService.success();
+        this.getGeneric();
+      })
+      .catch((error) => {
+        this.alertService.error();
+        console.log(error.message);
+      })
   }
 
   async getGeneric() {
@@ -469,7 +536,10 @@ export class ImportExcelComponent implements OnInit {
     this.genericRS = await this.importService.getGeneric(db);
   }
 
-  async onEditGeneric(item) {
-    const db: IConnection = this.connectionService.createConnection('config.json');
-  }
+  // async onEditGeneric(item) {
+  //   const db: IConnection = this.connectionService.createConnection('config.json');
+  //   this.openModal_generics = true;
+
+    
+  // }
 }
