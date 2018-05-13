@@ -42,4 +42,15 @@
   </h3>
 </clr-modal>
 
+<clr-modal [(clrModalOpen)]="modalPassword">
+  <h3 class="modal-title">รหัสผ่านสำหรับการเข้าใช้งานระบบ</h3>
+  <div class="modal-body">
+      <p>Username : Admin</p>
+      <p>Password : {{passwordAdmin}}</p>
+  </div>
+  <div class="modal-footer">
+      <button type="button" class="btn btn-outline" (click)="modalPassword = false">Close</button>
+      <!-- <button type="button" class="btn btn-primary" (click)="basic = false">Ok</button> -->
+  </div>
+</clr-modal>
 <app-loading-modal #modalLoading></app-loading-modal>

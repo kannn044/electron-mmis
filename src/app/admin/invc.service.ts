@@ -137,6 +137,32 @@ export class InvcService {
     });
   }
 
+  getReceiveTypeInvc(db: IConnection) {
+    return new Promise((resolve, reject) => {
+      const sql = 'select * from `dbo.rcv_type`';
+      db.query(sql, (error: any, results: any) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(results);
+        }
+      });
+    });
+  }
+
+  getWarehousesInvc(db: IConnection) {
+    return new Promise((resolve, reject) => {
+      const sql = 'select * from `dbo.dept_id`';
+      db.query(sql, (error: any, results: any) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(results);
+        }
+      });
+    });
+  }
+
   getLabelers(db: IConnection) {
     return new Promise((resolve, reject) => {
       const sql = 'select * from `dbo.company`';
@@ -154,6 +180,62 @@ export class InvcService {
     return new Promise((resolve, reject) => {
       const sql = 'SELECT mg.*,mgg.RECORD_NUMBER as group_id from `dbo.inv_md` mg left join `dbo.group` mgg on mg.GROUP_D = mgg.`CODE`';
       db.query(sql, (error: any, results: any) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(results);
+        }
+      });
+    });
+  }
+
+  getProducts(db: IConnection) {
+    return new Promise((resolve, reject) => {
+      const sql = 'SELECT vn.*,c.RECORD_NUMBER AS vendor_id,c2.RECORD_NUMBER AS manufac_id,md.RECORD_NUMBER as generic_id,md.SALE_UNIT FROM`dbo.drug_vn` vn LEFT JOIN `dbo.company` c ON vn.VENDOR_CODE = c.COMPANY_CODE LEFT JOIN `dbo.company` c2 ON vn.MANUFAC_CODE = c2.COMPANY_CODE LEFT JOIN `dbo.inv_md` md ON md.WORKING_CODE = vn.WORKING_CODE';
+      db.query(sql, (error: any, results: any) => {
+
+        if (error) {
+          reject(error);
+        } else {
+          resolve(results);
+        }
+      });
+    });
+  }
+
+  getBgTypeInvc(db: IConnection) {
+    return new Promise((resolve, reject) => {
+      const sql = 'SELECT * FROM`dbo.bdg_type` ';
+      db.query(sql, (error: any, results: any) => {
+
+        if (error) {
+          reject(error);
+        } else {
+          resolve(results);
+        }
+      });
+    });
+  }
+
+  getBgSourceInvc(db: IConnection) {
+    return new Promise((resolve, reject) => {
+      const sql = 'SELECT * FROM`dbo.bdg_source` ';
+      db.query(sql, (error: any, results: any) => {
+
+        if (error) {
+          reject(error);
+        } else {
+          resolve(results);
+        }
+      });
+    });
+  }
+
+  getRequisitionTypeInvc(db: IConnection) {
+    return new Promise((resolve, reject) => {
+      const sql = 'SELECT * FROM`dbo.disp_type` ';
+      db.query(sql, (error: any, results: any) => {
+
         if (error) {
           reject(error);
         } else {
