@@ -8,6 +8,7 @@ import { LayoutComponent } from './layout/layout.component';
 import { MainPageComponent } from './main-page/main-page.component';
 import { PageNotFoundComponent } from '../page-not-found/page-not-found.component';
 import { ImportExcelComponent } from './import-excel/import-excel.component';
+import { InvdosComponent } from './invdos/invdos.component';
 const routes: Routes = [
   {
     path: 'admin',
@@ -19,6 +20,7 @@ const routes: Routes = [
       { path: 'import-excel', component: ImportExcelComponent },
       { path: 'invs', component: InvsConnectionComponent },
       { path: 'invs-sync', component: InvsSyncComponent },
+      { path: 'invdos', component: InvdosComponent },
       { path: '**', component: PageNotFoundComponent },
     ]
   }

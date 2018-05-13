@@ -1,0 +1,16 @@
+<nav class="breadcrumb">
+  <!-- <a class="breadcrumb-item" href="javascript://" routerLink="/admin">หน้าหลัก</a> -->
+  <span class="breadcrumb-item active">นำเข้าข้อมลจาก INVDos</span>
+</nav>
+<div class="row">
+  <div class="col-xs-12 col-sm-12 col-md-7 col-lg-7 col-xl-7" style="padding: 1em">
+    <div class="card">
+      <div style="padding: 1em;">
+        <img src="../../../assets/pic/excel.svg" height="50" width="50" style="margin-right:1em "> อัพโหลดไฟล์ .TXT
+        <button class="btn btn-md" (click)="selectPath()">เลือกไฟล์</button>
+        <input type="text" [(ngModel)]="path" disabled>
+        <button style="float:right;" class="btn btn-success" (click)="importTxt()">Import</button>
+      </div>
+    </div>
+  </div>
+</div>

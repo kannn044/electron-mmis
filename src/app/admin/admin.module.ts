@@ -16,6 +16,7 @@ import { InvsSyncComponent } from './invs-sync/invs-sync.component';
 import { ImportExcelComponent } from './import-excel/import-excel.component';
 import { InvsService } from './invs.service';
 import { LoadingModalComponent } from './loading-modal/loading-modal.component';
+import { InvdosComponent } from './invdos/invdos.component';
 
 @NgModule({
   imports: [
@@ -26,7 +27,15 @@ import { LoadingModalComponent } from './loading-modal/loading-modal.component';
     ClarityModule,
     AuthModule
   ],
-  declarations: [MainPageComponent, LayoutComponent, InvsConnectionComponent, InvsSyncComponent, ImportExcelComponent, LoadingModalComponent],
+  declarations: [
+    MainPageComponent, 
+    LayoutComponent, 
+    InvsConnectionComponent, 
+    InvsSyncComponent, 
+    ImportExcelComponent, 
+    LoadingModalComponent, 
+    InvdosComponent
+  ],
   providers: [
     MainService,
     AlertService,
