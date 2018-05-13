@@ -15,11 +15,11 @@ import * as os from 'os';
 })
 export class ConnectionComponent implements OnInit {
 
-  dbHost: string = 'localhost';
-  dbPort: number = 3306;
-  dbName: string = 'mmis';
-  dbUser: string = 'root';
-  dbPassword: string = 'root';
+  dbHost = 'localhost';
+  dbPort = 3306;
+  dbName = 'mmis';
+  dbUser = 'root';
+  dbPassword = 'root';
 
   targetDir: string = null;
 
@@ -32,17 +32,18 @@ export class ConnectionComponent implements OnInit {
   }
 
   ngOnInit() {
-    let config: any = this.connectionService.getSetting('config.json');
+    const config: any = this.connectionService.getSetting('config.json');
     this.zone.run(() => {
       this.dbHost = config.dbHost;
       this.dbPort = +config.dbPort;
       this.dbName = config.dbName;
+      this.dbUser = config.dbUser;
       this.dbPassword = config.dbPassword;
     });
   }
 
   saveSetting() {
-    let obj: any = {};
+    const obj: any = {};
 
     obj.dbHost = this.dbHost;
     obj.dbPort = +this.dbPort;
@@ -50,10 +51,10 @@ export class ConnectionComponent implements OnInit {
     obj.dbUser = this.dbUser;
     obj.dbPassword = this.dbPassword;
 
-    let targetDir = path.join(os.homedir(), '.mmis_config');
+    const targetDir = path.join(os.homedir(), '.mmis_config');
     fse.ensureDirSync(targetDir);
 
-    let jsonFile = path.join(targetDir, 'config.json');
+    const jsonFile = path.join(targetDir, 'config.json');
     fse.writeJson(jsonFile, obj)
       .then(() => {
         this.alertService.success();

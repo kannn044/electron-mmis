@@ -1,3 +1,4 @@
+import { InvcService } from './invc.service';
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -16,6 +17,8 @@ import { InvsSyncComponent } from './invs-sync/invs-sync.component';
 import { ImportExcelComponent } from './import-excel/import-excel.component';
 import { InvsService } from './invs.service';
 import { LoadingModalComponent } from './loading-modal/loading-modal.component';
+import { InvcConnectionComponent } from './invc-connection/invc-connection.component';
+import { InvcSyncComponent } from './invc-sync/invc-sync.component';
 import { InvdosComponent } from './invdos/invdos.component';
 
 @NgModule({
@@ -28,18 +31,21 @@ import { InvdosComponent } from './invdos/invdos.component';
     AuthModule
   ],
   declarations: [
-    MainPageComponent, 
-    LayoutComponent, 
-    InvsConnectionComponent, 
-    InvsSyncComponent, 
-    ImportExcelComponent, 
-    LoadingModalComponent, 
-    InvdosComponent
+    MainPageComponent,
+    LayoutComponent,
+    InvsConnectionComponent,
+    InvsSyncComponent,
+    ImportExcelComponent,
+    LoadingModalComponent,
+    InvdosComponent,
+    InvcConnectionComponent,
+    InvcSyncComponent
   ],
   providers: [
     MainService,
     AlertService,
-    InvsService
+    InvsService,
+    InvcService
   ]
 })
 export class AdminModule { }

@@ -8,13 +8,12 @@ import * as path from 'path';
 import * as os from 'os';
 
 @Component({
-  selector: 'app-invs-connection',
-  templateUrl: './invs-connection.component.html',
+  selector: 'app-invc-connection',
+  templateUrl: './invc-connection.component.html',
   styles: []
 })
-export class InvsConnectionComponent implements OnInit {
+export class InvcConnectionComponent implements OnInit {
 
-  test: any;
   dbHost: any;
   dbPort: any;
   dbName: any;
@@ -45,11 +44,10 @@ export class InvsConnectionComponent implements OnInit {
     const targetDir = path.join(os.homedir(), '.mmis_config');
     fse.ensureDirSync(targetDir);
 
-    const jsonFile = path.join(targetDir, 'config_invs.json');
+    const jsonFile = path.join(targetDir, 'config_invc.json');
     fse.writeJson(jsonFile, obj)
       .then(() => {
-        // this.alertService.success();
-        this.router.navigate(['/admin/invs-sync']);
+        this.router.navigate(['/admin/invc-sync']);
       })
       .catch((error: any) => {
         console.log(error);
@@ -58,7 +56,7 @@ export class InvsConnectionComponent implements OnInit {
   }
 
   getSetting() {
-    const config: any = this.connectionService.getSetting('config_invs.json');
+    const config: any = this.connectionService.getSetting('config_invc.json');
     this.zone.run(() => {
       this.dbHost = config.dbHost;
       this.dbPort = +config.dbPort;
@@ -71,6 +69,7 @@ export class InvsConnectionComponent implements OnInit {
   async testConnections() {
     this.testConnection = true;
     const conn: any = await this.connectionService.testConnection(this.dbHost, this.dbPort, this.dbUser, this.dbPassword, this.dbName);
+    console.log(conn);
 
     if (!conn) {
       this.testConnection = false;
@@ -82,6 +81,7 @@ export class InvsConnectionComponent implements OnInit {
       // console.log('success');
     }
   }
+
   reTest() {
     this.testConnection = false;
     this.isSave = false;
