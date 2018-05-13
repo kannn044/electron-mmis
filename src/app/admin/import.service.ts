@@ -17,7 +17,7 @@ export class ImportService {
   }
 
   createTmpGenerics(db: IConnection) {
-    const sql = `CREATE TABLE tmp_generics (generic_id varchar(255) NOT NULL,generic_name varchar(255),working_code varchar(255),account_id varchar(255),generic_type_id varchar(255),package varchar(255),conversion varchar(255),primary_unit_id varchar(255),standard_cost int(10) DEFAULT 0,unit_cost int(10) DEFAULT 0,package_cost int(10) DEFAULT 0,min_qty int(10),max_qty int(10),PRIMARY KEY(generic_id))`;
+    const sql = `CREATE TABLE tmp_generics (generic_id varchar(255) NOT NULL,generic_name varchar(255),working_code varchar(255),account_id varchar(255),generic_type_id varchar(255),package varchar(255),conversion varchar(255),primary_unit_id varchar(255),standard_cost int(10) DEFAULT 0,unit_cost int(10) DEFAULT 0,package_cost int(10) DEFAULT 0,min_qty int(10),max_qty int(10),PRIMARY KEY(generic_id),UNIQUE (generic_name))`;
     db.query(sql, function (error, results, fields) {
       if (error) {
         throw error;
@@ -27,7 +27,7 @@ export class ImportService {
   }
 
   createTmpProducts(db: IConnection) {
-    const sql = `CREATE TABLE tmp_products (product_id int NOT NULL AUTO_INCREMENT,product_name varchar(255),working_code varchar(255),generic_id varchar(255),primary_unit_id varchar(255),m_labeler_id varchar(255),v_labeler_id varchar(255),PRIMARY KEY(product_id))`;
+    const sql = `CREATE TABLE tmp_products (product_id int NOT NULL AUTO_INCREMENT,product_name varchar(255),working_code varchar(255),generic_id varchar(255),primary_unit_id varchar(255),m_labeler_id varchar(255),v_labeler_id varchar(255),remain_qty int(10),warehouse_name varchar(255),tmt_id varchar(255),PRIMARY KEY(product_id),UNIQUE (product_name))`;
     db.query(sql, function (error, results, fields) {
       if (error) {
         throw error;
@@ -143,6 +143,14 @@ export class ImportService {
     });
   }
 
+  getProducts(db: IConnection) {
+    return new Promise((resolve, reject) => {
+      db.query(`SELECT * FROM mm_products`, (error: any, results: any) => {
+        resolve(results);
+      });
+    });
+  }
+
   getProvince(db: IConnection) {
     return new Promise((resolve, reject) => {
       db.query(`SELECT * FROM l_province`, (error: any, results: any) => {
@@ -212,36 +220,34 @@ export class ImportService {
       db.query(`SELECT
       mg.generic_name,
       mp.product_name,
-      mp.working_code,
-      mga.account_name,
-      mgt.generic_type_name,
       mul.unit_name AS large_unit,
-      mug.qty,
+      max(mug.qty) AS qty,
       mus.unit_name AS small_unit,
-      mg.standard_cost,
       mg.unit_cost,
       mug.cost,
-      mg.min_qty,
-      mg.max_qty,
+      wp.qty AS remain_qty,
+      ww.warehouse_name,
       mlm.labeler_name AS mlm,
-      mlv.labeler_name AS mlv
+      mlv.labeler_name AS mlv 
     FROM
       mm_products mp
-    JOIN mm_generics mg ON mg.generic_id = mp.generic_id
-    LEFT JOIN mm_generic_types mgt ON mgt.generic_type_id = mg.generic_type_id
-    LEFT JOIN mm_generic_accounts mga ON mga.account_id = mg.account_id
-    LEFT JOIN mm_unit_generics mug ON mug.generic_id = mg.generic_id
-    LEFT JOIN mm_units mus ON mus.unit_id = mug.to_unit_id
-    LEFT JOIN mm_units mul ON mul.unit_id = mug.from_unit_id
-    LEFT JOIN mm_labelers mlv ON mlv.labeler_id = mp.v_labeler_id
-    LEFT JOIN mm_labelers mlm ON mlm.labeler_id = mp.m_labeler_id
+      JOIN mm_generics mg ON mg.generic_id = mp.generic_id
+      JOIN wm_products wp ON wp.product_id = mp.product_id
+      JOIN wm_warehouses ww ON ww.warehouse_id = wp.warehouse_id
+      LEFT JOIN mm_generic_types mgt ON mgt.generic_type_id = mg.generic_type_id
+      LEFT JOIN mm_generic_accounts mga ON mga.account_id = mg.account_id
+      LEFT JOIN mm_unit_generics mug ON mug.generic_id = mg.generic_id
+      LEFT JOIN mm_units mus ON mus.unit_id = mug.to_unit_id
+      LEFT JOIN mm_units mul ON mul.unit_id = mug.from_unit_id
+      LEFT JOIN mm_labelers mlv ON mlv.labeler_id = mp.v_labeler_id
+      LEFT JOIN mm_labelers mlm ON mlm.labeler_id = mp.m_labeler_id 
     GROUP BY
-      mg.generic_name
+      mg.generic_name 
     ORDER BY
       mgt.generic_type_id,
       mg.generic_name`, (error: any, results: any) => {
-        resolve(results);
-      });
+          resolve(results);
+        });
     });
   }
 
@@ -283,6 +289,14 @@ export class ImportService {
   getWarehouses(db: IConnection) {
     return new Promise((resolve, reject) => {
       db.query(`SELECT * FROM wm_warehouses`, (error: any, results: any) => {
+        resolve(results);
+      });
+    });
+  }
+
+  getUnitGenericsId(db: IConnection) {
+    return new Promise((resolve, reject) => {
+      db.query(`SELECT mup.unit_generic_id,mp.product_id,mp.product_name,max( mup.qty ) AS max_qty FROM mm_unit_generics mup JOIN mm_products mp ON mp.generic_id = mup.generic_id GROUP BY mp.product_id, mp.product_name`, (error: any, results: any) => {
           resolve(results);
         });
     });
@@ -323,6 +337,18 @@ export class ImportService {
   insertProducts(db: IConnection, data: any) {
     data.forEach(v => {
       const sql = `INSERT INTO mm_products SET ?`;
+      db.query(sql, v, function (error, results, fields) {
+        if (error) {
+          throw error;
+        }
+      });
+    });
+    return true;
+  }
+
+  insertWmProducts(db: IConnection, data: any) {
+    data.forEach(v => {
+      const sql = `INSERT INTO wm_products SET ?`;
       db.query(sql, v, function (error, results, fields) {
         if (error) {
           throw error;
@@ -439,6 +465,16 @@ export class ImportService {
   clearDataProducts(db: IConnection) {
     return new Promise((resolve, reject) => {
       db.query(`TRUNCATE TABLE mm_products`, (error: any, results: any) => {
+        if (error) {
+          reject(error);
+        } else { resolve(results); }
+      });
+    });
+  }
+  
+  clearDataWmProducts(db: IConnection) {
+    return new Promise((resolve, reject) => {
+      db.query(`TRUNCATE TABLE wm_products`, (error: any, results: any) => {
         if (error) {
           reject(error);
         } else { resolve(results); }

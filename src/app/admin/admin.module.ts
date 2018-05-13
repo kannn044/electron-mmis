@@ -19,6 +19,7 @@ import { InvsService } from './invs.service';
 import { LoadingModalComponent } from './loading-modal/loading-modal.component';
 import { InvcConnectionComponent } from './invc-connection/invc-connection.component';
 import { InvcSyncComponent } from './invc-sync/invc-sync.component';
+import { InvdosComponent } from './invdos/invdos.component';
 
 @NgModule({
   imports: [
@@ -29,7 +30,17 @@ import { InvcSyncComponent } from './invc-sync/invc-sync.component';
     ClarityModule,
     AuthModule
   ],
-  declarations: [MainPageComponent, LayoutComponent, InvsConnectionComponent, InvsSyncComponent, ImportExcelComponent, LoadingModalComponent, InvcConnectionComponent, InvcSyncComponent],
+  declarations: [
+    MainPageComponent,
+    LayoutComponent,
+    InvsConnectionComponent,
+    InvsSyncComponent,
+    ImportExcelComponent,
+    LoadingModalComponent,
+    InvdosComponent,
+    InvcConnectionComponent,
+    InvcSyncComponent
+  ],
   providers: [
     MainService,
     AlertService,
