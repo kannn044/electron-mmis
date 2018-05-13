@@ -20,6 +20,7 @@ import { LoadingModalComponent } from './loading-modal/loading-modal.component';
 import { InvcConnectionComponent } from './invc-connection/invc-connection.component';
 import { InvcSyncComponent } from './invc-sync/invc-sync.component';
 import { InvdosComponent } from './invdos/invdos.component';
+import { InvdosService } from './invdos.service';
 
 @NgModule({
   imports: [
@@ -45,7 +46,8 @@ import { InvdosComponent } from './invdos/invdos.component';
     MainService,
     AlertService,
     InvsService,
-    InvcService
+    InvcService,
+    InvdosService
   ]
 })
 export class AdminModule { }
