@@ -14,40 +14,38 @@ import * as fse from 'fs-extra';
 import * as path from 'path';
 import * as os from 'os';
 const { dialog } = require('electron').remote
-
+const iconv = require('iconv-lite');
 @Component({
   selector: 'app-invdos',
   templateUrl: './invdos.component.html'
 })
 export class InvdosComponent implements OnInit {
-
+  
   path: string;
-
+  
   constructor(
     private connectionService: ConnectionService
   ) { }
-
+  
   ngOnInit() {
   }
-
+  
   selectPath() {
     const path = dialog.showOpenDialog({ properties: ['openFile'] });
     if (path) {
       this.path = path.toString();
     }
   }
-
+  
   importTxt() {
     const db: IConnection = this.connectionService.createConnection('config.json');
     db.connect();
-
+    
     if (this.path) {
-      const workSheetsFromFile = fs.readFileSync(this.path, { encoding: 'UTF-8' });
+      let convert = iconv.decode(Buffer.from(fs.readFileSync(this.path)), 'tis-620');
+      
+      const workSheetsFromFile = xlsx.parse(convert);
       console.log(workSheetsFromFile);
-      // for (let x = 0; x < workSheetsFromFile.length; x++) {
-      //   const data = workSheetsFromFile[x].data;
-      //   console.log(data);
-      // }
     }
   }
 }
