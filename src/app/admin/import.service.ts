@@ -1,4 +1,3 @@
-import { async } from '@angular/core/testing';
 import { Injectable } from '@angular/core';
 import { IConnection } from 'mysql';
 
@@ -19,6 +18,16 @@ export class ImportService {
 
   createTmpProductDos(db: IConnection) {
     const sql = `CREATE TABLE tmp_product_dos (id int NOT NULL AUTO_INCREMENT,c1 varchar(255),c2 varchar(255),c3 varchar(255),c4 varchar(255),c5 varchar(255),c6 varchar(255),c7 varchar(255),c8 varchar(255),c9 varchar(255),c10 varchar(255),c11 varchar(255),PRIMARY KEY(id))`;
+    db.query(sql, function (error, results, fields) {
+      if (error) {
+        throw error;
+      }
+    });
+    return true;
+  }
+
+  createTmpMappingDos(db: IConnection) {
+    const sql = `CREATE TABLE tmp_mapping_dos (id int NOT NULL AUTO_INCREMENT,c1 varchar(255),c2 varchar(255),PRIMARY KEY(id))`;
     db.query(sql, function (error, results, fields) {
       if (error) {
         throw error;
@@ -130,41 +139,33 @@ export class ImportService {
     return true;
   }
 
-  async importWareHouses(db: IConnection, data: any) {
-    function insertDept(name) {
-      return new Promise(fn);
-      function fn(resolve, reject) {
-        const sql = `INSERT INTO wm_warehouses SET ?`;
-        db.query(sql, name, function (err, rows, fields) {
-          if (err) {
-            console.log(err);
-            return reject(err);
-          } else {
-            return resolve(rows);
-          }
-        });
-      }
-    }
-    function checkFor(params: any) {
-      return new Promise(fore);
-      async function fore(resolve, reject) {
-        await params.forEach(async (v) => {
-          const rs: any = await insertDept(v);
-          if (rs.insertId === params.length) {
-          //   console.log(rs.message);
-          //   return reject(rs.message);
-          // } else {
-            return resolve(true);
-          }
-        });
-      }
-    }
-    return checkFor(data);
+  importWareHouses(db: IConnection, data: any) {
+    data.forEach(v => {
+      const sql = `INSERT INTO wm_warehouses SET ?`;
+      db.query(sql, v, function (error, results, fields) {
+        if (error) {
+          throw error;
+        }
+      });
+    });
+    return true;
   }
 
   importLabeler(db: IConnection, data: any) {
     data.forEach(v => {
       const sql = `INSERT INTO tmp_labelers SET ?`;
+      db.query(sql, v, function (error, results, fields) {
+        if (error) {
+          throw error;
+        }
+      });
+    });
+    return true;
+  }
+
+  importMapping(db: IConnection, data: any) {
+    data.forEach(v => {
+      const sql = `INSERT INTO tmp_mapping_dos SET ?`;
       db.query(sql, v, function (error, results, fields) {
         if (error) {
           throw error;
@@ -317,6 +318,43 @@ export class ImportService {
       mus.unit_name AS small_unit,
       mg.unit_cost,
       mug.cost,
+      wp.qty AS remain_qty,
+      ww.warehouse_name,
+      mlm.labeler_name AS mlm,
+      mlv.labeler_name AS mlv 
+    FROM
+      mm_products mp
+      JOIN mm_generics mg ON mg.generic_id = mp.generic_id
+      JOIN wm_products wp ON wp.product_id = mp.product_id
+      JOIN wm_warehouses ww ON ww.warehouse_id = wp.warehouse_id
+      LEFT JOIN mm_generic_types mgt ON mgt.generic_type_id = mg.generic_type_id
+      LEFT JOIN mm_generic_accounts mga ON mga.account_id = mg.account_id
+      LEFT JOIN mm_unit_generics mug ON mug.generic_id = mg.generic_id
+      LEFT JOIN mm_units mus ON mus.unit_id = mug.to_unit_id
+      LEFT JOIN mm_units mul ON mul.unit_id = mug.from_unit_id
+      LEFT JOIN mm_labelers mlv ON mlv.labeler_id = mp.v_labeler_id
+      LEFT JOIN mm_labelers mlm ON mlm.labeler_id = mp.m_labeler_id 
+    GROUP BY
+      mg.generic_name 
+    ORDER BY
+      mgt.generic_type_id,
+      mg.generic_name`, (error: any, results: any) => {
+          resolve(results);
+        });
+    });
+  }
+
+  getGenericDos(db: IConnection) {
+    return new Promise((resolve, reject) => {
+      db.query(`SELECT
+      mg.generic_id,
+      mg.generic_name,
+      mp.product_name,
+      mul.unit_name AS large_unit,
+      max(mug.qty) AS qty,
+      mus.unit_name AS small_unit,
+      mg.unit_cost,
+      mug.cost
     FROM
       mm_products mp
       JOIN mm_generics mg ON mg.generic_id = mp.generic_id
@@ -324,7 +362,7 @@ export class ImportService {
       LEFT JOIN mm_generic_accounts mga ON mga.account_id = mg.account_id
       LEFT JOIN mm_unit_generics mug ON mug.generic_id = mg.generic_id
       LEFT JOIN mm_units mus ON mus.unit_id = mug.to_unit_id
-      LEFT JOIN mm_units mul ON mul.unit_id = mug.from_unit_id 
+      LEFT JOIN mm_units mul ON mul.unit_id = mug.from_unit_id
     GROUP BY
       mg.generic_name 
     ORDER BY
@@ -362,6 +400,14 @@ export class ImportService {
   getLabelers(db: IConnection) {
     return new Promise((resolve, reject) => {
       db.query(`SELECT * FROM mm_labelers`, (error: any, results: any) => {
+        resolve(results);
+      });
+    });
+  }
+
+  getTmpMapping(db: IConnection) {
+    return new Promise((resolve, reject) => {
+      db.query(`SELECT * FROM tmp_mapping_dos`, (error: any, results: any) => {
         resolve(results);
       });
     });

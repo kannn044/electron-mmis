@@ -108,10 +108,8 @@
             <clr-dg-column>หน่วยเล็ก</clr-dg-column>
             <clr-dg-column>ราคาต่อหน่วย</clr-dg-column>
             <clr-dg-column>ราคาต่อแพ็ค</clr-dg-column>
-            <clr-dg-column>คงคลัง</clr-dg-column>
-            <clr-dg-column>คลัง</clr-dg-column>
             <!-- <clr-dg-column>แก้ไข</clr-dg-column> -->
-            <clr-dg-row *clrDgItems="let item of genericRS" [clrDgItem]="item">
+            <clr-dg-row *clrDgItems="let item of genericRs" [clrDgItem]="item">
               <clr-dg-cell>{{item.generic_name}}</clr-dg-cell>
               <clr-dg-cell>{{item.product_name}}</clr-dg-cell>
               <clr-dg-cell>{{item.large_unit}}</clr-dg-cell>
@@ -119,8 +117,6 @@
               <clr-dg-cell>{{item.small_unit}}</clr-dg-cell>
               <clr-dg-cell>{{item.unit_cost}}</clr-dg-cell>
               <clr-dg-cell>{{item.cost}}</clr-dg-cell>
-              <clr-dg-cell>{{item.remain_qty}} ({{item.small_unit}})</clr-dg-cell>
-              <clr-dg-cell>{{item.warehouse_name}}</clr-dg-cell>
               <!-- <clr-dg-cell style="text-align: center">
                       <div class="btn-group btn-sm">
                         <button class="btn btn-outline-primary" (click)="onEditGeneric(item)">Edit</button>
@@ -137,7 +133,27 @@
       </clr-tab-content>
     </ng-template>
   </clr-tab>
-</clr-tabs>
+
+  <!-- <clr-tab>
+    <button clrTabLink>Mapping รายการยา/ผู้ประกอบการ</button>
+    <ng-template [(clrIfActive)]="cloudActive">
+      <clr-tab-content>
+        <div class="row">
+          <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12" style="padding: 1em">
+            <div class="card">
+              <div style="padding: 1em;">
+                <img src="../../../assets/pic/txt.png" height="50" width="50" style="margin-right:1em "> อัพโหลดไฟล์ BUYDRUG.TXT
+                <button class="btn btn-md" (click)="selectPath()">เลือกไฟล์</button>
+                <input type="text" [(ngModel)]="path" disabled>
+                <button style="float:right;" class="btn btn-primary" (click)="mappingLabeler()">Import</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </clr-tab-content>
+    </ng-template>
+  </clr-tab>
+</clr-tabs> -->
 
 <clr-modal [(clrModalOpen)]="openModal_labeler">
   <h3 class="modal-title">แก้ไขข้อมูลผ้ประกอบการ</h3>

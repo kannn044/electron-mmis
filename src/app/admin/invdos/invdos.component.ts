@@ -14,12 +14,8 @@ import * as fse from 'fs-extra';
 import * as path from 'path';
 import * as os from 'os';
 import { InvdosService } from '../invdos.service';
-<<<<<<< HEAD
 import { group } from '@angular/animations';
 const { dialog } = require('electron').remote
-=======
-const { dialog } = require('electron').remote;
->>>>>>> 51e053a7f1d0b9f5856f56982dded7b383761256
 const iconv = require('iconv-lite');
 @Component({
   selector: 'app-invdos',
@@ -29,10 +25,10 @@ export class InvdosComponent implements OnInit {
 
   path: string;
 
-  openModal_people = false;
-  openModal_labeler = false;
-  openModal_warehouse = false;
-  openModal_generics = false;
+  openModal_people: boolean = false;
+  openModal_labeler: boolean = false;
+  openModal_warehouse: boolean = false;
+  openModal_generics: boolean = false;
 
   peopleEdit = {};
   lablerEdit = {};
@@ -64,6 +60,7 @@ export class InvdosComponent implements OnInit {
   ngOnInit() {
     this.getWarehouses();
     this.getLabeler();
+    this.getGeneric();
   }
 
   selectPath() {
@@ -85,31 +82,27 @@ export class InvdosComponent implements OnInit {
     db.connect();
 
     if (this.path) {
-      // await this.modalLoading.show();
-      await this.importService.clearDataWareHouse(db);
-      const fileData: any = await this.converFile(this.path);
-      let obj = {};
+      await this.modalLoading.show();
+      let fileData = await this.convertFile(this.path);
 
-      const warehouseData = [];
-
-      for (const i of fileData) {
-        obj = {
-          'short_code': i[0],
-          'warehouse_name': i[1]
-        };
-        if (i[1]) { warehouseData.push(obj); }
+      let warehouseData = [];
+      for (let i in fileData) {
+        const obj = {
+          'short_code': fileData[i][0],
+          'warehouse_name': fileData[i][1]
+        }
+        if (fileData[i][1]) warehouseData.push(obj);
       }
-      const rs = await this.importService.importWareHouses(db, warehouseData);
+
+      await this.importService.clearDataWareHouse(db);
+      let rs = await this.importService.importWareHouses(db, warehouseData);
       if (rs) {
-<<<<<<< HEAD
         await this.modalLoading.hide(6000);
-=======
-        await this.getWarehouses();
-        await this.modalLoading.hide();
->>>>>>> 51e053a7f1d0b9f5856f56982dded7b383761256
         await this.alertService.success();
-      } else { await this.alertService.error(); }
+      }
+      else await this.alertService.error();
     }
+    await this.getWarehouses();
   }
 
   async getWarehouses() {
@@ -142,7 +135,7 @@ export class InvdosComponent implements OnInit {
       .catch((error) => {
         this.alertService.error();
         console.log(error.message);
-      });
+      })
   }
 
   async importLabeler() {
@@ -151,10 +144,10 @@ export class InvdosComponent implements OnInit {
 
     if (this.path) {
       await this.modalLoading.show();
-      const fileData = await this.converFile(this.path);
-      console.log(fileData);
+      let fileData = await this.convertFile(this.path);
+      console.log(fileData)
 
-      const labelerData = [];
+      let labelerData = [];
       for (let i in fileData) {
         const obj = {
           'labeler_name': fileData[i][3] + fileData[i][4] + fileData[i][5],
@@ -163,7 +156,7 @@ export class InvdosComponent implements OnInit {
           'is_manufacturer': fileData[i][2] ? 'Y' : 'N',
           'phone': fileData[i][10]
         }
-        if (fileData[i][4]) { labelerData.push(obj); }
+        if (fileData[i][4]) labelerData.push(obj);
       }
 
       await this.importService.clearDataLabeler(db);
@@ -207,8 +200,7 @@ export class InvdosComponent implements OnInit {
 
     if (this.path) {
       await this.modalLoading.show();
-<<<<<<< HEAD
-      let fileData = await this.converFile(this.path);
+      let fileData = await this.convertFile(this.path);
       await this.importService.createTmpProductDos(db);
       await this.importService.truncateTable(db, this.truncate);
 
@@ -337,37 +329,12 @@ export class InvdosComponent implements OnInit {
             if (v[2] && unit_id) generics.push(objGenerics);
             if (v[5] && unit_id) products.push(objProducts);
           }
-
           await this.importService.insertUnitGenerics(db, unitGenerics);
           await this.importService.insertGenerics(db, generics);
           await this.importService.insertProducts(db, products);
         }
       }
       else await this.alertService.error();
-=======
-      const fileData = await this.converFile(this.path);
-      console.log(fileData);
-
-      // let labelerData = [];
-      // for (let i in fileData) {
-      //   const obj = {
-      //     'labeler_name': fileData[i][3] + fileData[i][4] + fileData[i][5],
-      //     'description': fileData[i][0],
-      //     'is_vendor': fileData[i][1] ? 'Y' : 'N',
-      //     'is_manufacturer': fileData[i][2] ? 'Y' : 'N',
-      //     'phone': fileData[i][10]
-      //   }
-      //   if (fileData[i][4]) labelerData.push(obj);
-      // }
-
-      // await this.importService.clearDataLabeler(db);
-      // let rs = await this.importService.insertLabeler(db, labelerData);
-      // if (rs) {
-      await this.modalLoading.hide();
-      //   await this.alertService.success();
-      // }
-      // else await this.alertService.error();
->>>>>>> 51e053a7f1d0b9f5856f56982dded7b383761256
     }
     await this.importService.deleteTableTmp(db, this.deleteTmp);
     await this.getGeneric();
@@ -379,10 +346,40 @@ export class InvdosComponent implements OnInit {
 
   async getGeneric() {
     const db: IConnection = this.connectionService.createConnection('config.json');
-    this.genericRs = await this.importService.getGeneric(db);
+    this.genericRs = await this.importService.getGenericDos(db);
   }
 
-  async converFile(pathFile: any) {
+  async mappingLabeler() {
+    const db: IConnection = this.connectionService.createConnection('config.json');
+    db.connect();
+
+    if (this.path) {
+      await this.modalLoading.show();
+      let fileData = await this.convertFile(this.path);
+      await this.importService.createTmpMappingDos(db);
+
+      let mapping = [];
+      for (let i in fileData) {
+        const obj = {
+          'c1': fileData[i][1],
+          'c2': fileData[i][2]
+        }
+        if (fileData[i][2]) mapping.push(obj);
+      }
+      let rs = await this.importService.importMapping(db, mapping);
+      if (rs) {
+        let mappingRs = await this.importService.getTmpMapping(db);
+        let labelerRs = await this.importService.getLabelers(db);
+        let productRs = await this.importService.getGenericDos(db);
+
+        for (let v in productRs) {
+          
+        }
+      }
+    }
+  }
+
+  async convertFile(pathFile: any) {
     let convert = iconv.decode((fs.readFileSync(pathFile)), 'tis-620');
 
     let _data = convert.split('\n');
