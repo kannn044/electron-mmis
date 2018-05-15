@@ -40,8 +40,11 @@ export class InvcSyncComponent implements OnInit {
         'mm_generic_groups',
         'mm_labelers',
         'mm_generics',
+        'mm_unit_generics',
         'mm_products',
         'um_people',
+        'um_people_users',
+        'um_users',
         'wm_receive_types',
         'wm_warehouses',
         'bm_bgtype',
@@ -49,26 +52,33 @@ export class InvcSyncComponent implements OnInit {
         'wm_requisition_type'];
       await dbInv.connect();
       await dbMmis.connect();
-      await this.invcService.truncate(dbMmis, tables);
-      await this.getUnits(dbInv, dbMmis);
-      await this.getGenericDosages(dbInv, dbMmis);
-      await this.getGenericAccounts(dbInv, dbMmis);
-      await this.getGenericTypes(dbInv, dbMmis);
-      // await this.getGenericHosp(dbInv, dbMmis);
-      await this.getGenericGroup(dbInv, dbMmis);
-      await this.getLabelers(dbInv, dbMmis);
-      await this.getGenerics(dbInv, dbMmis);
-      await this.getProducts(dbInv, dbMmis);
-      await this.getReceiveTypes(dbInv, dbMmis);
-      await this.getWarehouses(dbInv, dbMmis);
-      await this.getBgTypes(dbInv, dbMmis);
-      await this.getBgSource(dbInv, dbMmis);
-      await this.getRequisitionType(dbInv, dbMmis);
-      await this.insertAdmin(dbMmis);
+      // await this.invcService.truncate(dbMmis, tables);
+      // await this.getUnits(dbInv, dbMmis);
+      // await this.getGenericDosages(dbInv, dbMmis);
+      // await this.getGenericAccounts(dbInv, dbMmis);
+      // await this.getGenericTypes(dbInv, dbMmis);
+      // // await this.getGenericHosp(dbInv, dbMmis);
+      // await this.getGenericGroup(dbInv, dbMmis);
+      // await this.getLabelers(dbInv, dbMmis);
+      // await this.getGenerics(dbInv, dbMmis);
+      // await this.getUnitGenerics(dbInv, dbMmis);
+      // await this.getProducts(dbInv, dbMmis);
+      // await this.getReceiveTypes(dbInv, dbMmis);
+      // await this.getWarehouses(dbInv, dbMmis);
+      // await this.getBgTypes(dbInv, dbMmis);
+      // await this.getBgSource(dbInv, dbMmis);
+      // await this.getRequisitionType(dbInv, dbMmis);
+      // await this.insertAdmin(dbMmis);
+      await this.insertPeople(dbMmis);
+      await this.insertUser(dbMmis);
+      await this.insertPeopleUser(dbMmis);
       await dbInv.end();
       await dbMmis.end();
       await this.modalLoading.hide(6000);
-      this.modalPassword = true;
+      await setTimeout(() => {
+        this.openModalPassword();
+      }, 6000);
+      // await this.openModalPassword();
       this.isSave = false;
     } catch (error) {
       this.modalLoading.hide();
@@ -257,18 +267,18 @@ export class InvcSyncComponent implements OnInit {
               'labeler_id': v.RECORD_NUMBER,
               'bank_branch': v.BANK_BRANCH,
               'account:name': null
-            }
+            };
             labelerBanks.push(objLabelerBank);
           }
 
         });
-        // this.invcService.insert(dbMmis, 'mm_labelers', labelers)
-        //   .then(() => {
-        //     resolve();
-        //   })
-        //   .catch(() => {
-        //     reject();
-        //   });
+        this.invcService.insert(dbMmis, 'mm_labelers', labelers)
+          .then(() => {
+            resolve();
+          })
+          .catch(() => {
+            reject();
+          });
       } catch (error) {
         console.log(error);
       }
@@ -296,6 +306,7 @@ export class InvcSyncComponent implements OnInit {
           } else {
             unitId = null;
           }
+          // mm_generics
           const objGenerics = {
             'generic_id': v.RECORD_NUMBER,
             'generic_name': v.DRUG_NAME,
@@ -318,6 +329,57 @@ export class InvcSyncComponent implements OnInit {
           generics.push(objGenerics);
         }
         this.invcService.insert(dbMmis, 'mm_generics', generics)
+          .then(() => {
+            resolve();
+          })
+          .catch(() => {
+            reject();
+          });
+      } catch (error) {
+        console.log(error);
+      }
+    });
+  }
+
+  async getUnitGenerics(dbInv, dbMmis) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const genericRs: any = await this.invcService.getGenerics(dbInv);
+        const unitGenerics = [];
+        for (const v of genericRs) {
+          let toUnitId;
+          let fromUnitId;
+          const idxUnitId = _.findIndex(this.units, { unit_name: v.SALE_UNIT });
+          if (idxUnitId > -1) {
+            toUnitId = this.units[idxUnitId].unit_id;
+          } else {
+            toUnitId = null;
+          }
+          const idxFromUnitId = _.findIndex(this.units, { unit_name: v.PACK_UNIT });
+          if (idxFromUnitId > -1) {
+            fromUnitId = this.units[idxFromUnitId].unit_id;
+          } else {
+            fromUnitId = toUnitId;
+          }
+          // mm_unit_generics
+          let objUnitGenenrics = {
+            'from_unit_id': fromUnitId,
+            'to_unit_id': toUnitId,
+            'qty': v.STD_RATIO1,
+            'cost': v.STD_PRICE1,
+            'generic_id': v.RECORD_NUMBER
+          };
+          unitGenerics.push(objUnitGenenrics);
+          objUnitGenenrics = {
+            'from_unit_id': fromUnitId,
+            'to_unit_id': toUnitId,
+            'qty': v.STD_RATIO3,
+            'cost': v.STD_PRICE3,
+            'generic_id': v.RECORD_NUMBER
+          };
+          unitGenerics.push(objUnitGenenrics);
+        }
+        this.invcService.insert(dbMmis, 'mm_unit_generics', unitGenerics)
           .then(() => {
             resolve();
           })
@@ -509,6 +571,80 @@ export class InvcSyncComponent implements OnInit {
     });
   }
 
+  async insertPeople(dbMmis) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const array = [];
+        const obj: any = {
+          'people_id': 1,
+          'title_id': 1,
+          'fname': 'ผู้ดูแลระบบ',
+          'lname': ''
+        };
+        array.push(obj);
+        this.invcService.insert(dbMmis, 'um_people', array)
+          .then(() => {
+            resolve();
+          })
+          .catch((error) => {
+            reject();
+          });
+      } catch (error) {
+        console.log(error);
+      }
+    });
+  }
+
+  async insertUser(dbMmis) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const array = [];
+        const right = 'WM_HIS_MAPPING,WM_MINMAX_PLANNING,WM_SHIPPING_NETWORKS,MM_ADMIN,UM_ADMIN,WM_ADMIN,CM_ADMIN,PO_ADMIN,WM_HIS_TRANSACTION,WM_REQUISITION,WM_CANCEL_BORROW,PO_CANCEL,PO_CANCEL_AFFTER_APPROVE,PO_CONFIRM,BM_ADMIN,WM_RECEIVE,PO_CREATE,WM_APPROVE_BORROW,WM_REQUISITION_APPROVE,WM_RECEIVE_APPROVE,WM_RECEIVE_OTHER_APPROVE,WM_ISSUE_APPROVE,PO_APPROVE,WM_TRANSFER_APPROVE,WM_WAREHOUSE_MANAGEMENT,PO_EDIT,PO_EDIT_AFFTER_APPROVE,WM_TRANSFER';
+        this.passwordAdmin = Math.random().toString(15).substr(2, 6);
+        const hashPassword = crypto.createHash('md5').update(this.passwordAdmin).digest('hex');
+        const obj: any = {
+          'user_id': 1,
+          'username': 'admin',
+          'password': hashPassword,
+          'access_right': right
+        };
+        array.push(obj);
+        this.invcService.insert(dbMmis, 'um_users', array)
+          .then(() => {
+            resolve();
+          })
+          .catch(() => {
+            reject();
+          });
+      } catch (error) {
+        console.log(error);
+      }
+    });
+  }
+
+  async insertPeopleUser(dbMmis) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const array = [];
+        const obj: any = {
+          'people_user_id': 1,
+          'people_id': 1,
+          'user_id': 1
+        };
+        array.push(obj);
+        this.invcService.insert(dbMmis, 'um_people_users', array)
+          .then(() => {
+            resolve();
+          })
+          .catch(() => {
+            reject();
+          });
+      } catch (error) {
+        console.log(error);
+      }
+    });
+  }
+
   async insertAdmin(dbMmis) {
     return new Promise(async (resolve, reject) => {
       try {
@@ -532,12 +668,17 @@ export class InvcSyncComponent implements OnInit {
           'password': hashPassword,
           'access_right': right
         };
+        console.log('user');
+
         this.invcService.insert(dbMmis, 'um_people', people)
           .then(() => {
+            console.log('insert um_people done!');
             this.invcService.insert(dbMmis, 'um_people_users', people)
               .then(() => {
+                console.log('insert um_people_users done!');
                 this.invcService.insert(dbMmis, 'um_users', people)
                   .then(() => {
+                    console.log('insert um_users done!');
                     resolve();
                   })
                   .catch(() => {
@@ -563,5 +704,11 @@ export class InvcSyncComponent implements OnInit {
     } else {
       return true;
     }
+  }
+
+  openModalPassword() {
+    this.modalPassword = true;
+    console.log(this.openModalPassword);
+
   }
 }
