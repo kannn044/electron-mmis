@@ -245,6 +245,20 @@ export class InvcService {
     });
   }
 
+  getRemainQtyInvc(db: IConnection) {
+    return new Promise((resolve, reject) => {
+      const sql = 'SELECT * FROM`dbo.inv_md_c` ';
+      db.query(sql, (error: any, results: any) => {
+
+        if (error) {
+          reject(error);
+        } else {
+          resolve(results);
+        }
+      });
+    });
+  }
+
   insert(db: IConnection, name, items) {
     return new Promise((resolve, reject) => {
       const sql = `insert into ${name} SET ?`;
