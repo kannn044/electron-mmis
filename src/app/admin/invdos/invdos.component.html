@@ -2,15 +2,143 @@
   <!-- <a class="breadcrumb-item" href="javascript://" routerLink="/admin">หน้าหลัก</a> -->
   <span class="breadcrumb-item active">นำเข้าข้อมลจาก INVDos</span>
 </nav>
-<div class="row">
-  <div class="col-xs-12 col-sm-12 col-md-7 col-lg-7 col-xl-7" style="padding: 1em">
-    <div class="card">
-      <div style="padding: 1em;">
-        <img src="../../../assets/pic/excel.svg" height="50" width="50" style="margin-right:1em "> อัพโหลดไฟล์ .TXT
-        <button class="btn btn-md" (click)="selectPath()">เลือกไฟล์</button>
-        <input type="text" [(ngModel)]="path" disabled>
-        <button style="float:right;" class="btn btn-success" (click)="importTxt()">Import</button>
-      </div>
-    </div>
+<clr-tabs>
+  <clr-tab>
+    <button clrTabLink>ข้อมูลคลัง</button>
+    <ng-template [(clrIfActive)]="dashboardActive">
+      <clr-tab-content>
+        <div class="row">
+          <div class="col-xl-12 col-lg-12 col-md-7 col-sm-7" style="padding: 1em">
+            <div class="card">
+              <div style="padding: 1em;">
+                <img src="../../../assets/pic/txt.png" height="50" width="50" style="margin-right:1em "> อัพโหลดไฟล์ DEPT_ID.TXT
+                <button class="btn btn-md" (click)="selectPath()">เลือกไฟล์</button>
+                <input type="text" [(ngModel)]="path" disabled>
+                <button style="float:right;" class="btn btn-success" (click)="importWareHouse()">Import</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <clr-datagrid>
+          <clr-dg-column>ชื่อคลัง</clr-dg-column>
+          <clr-dg-column>แก้ไข</clr-dg-column>
+          <clr-dg-row *clrDgItems="let item of warehousesRS" [clrDgItem]="item">
+            <clr-dg-cell>{{item.warehouse_name}}</clr-dg-cell>
+            <clr-dg-cell style="text-align: center">
+              <div class="btn-group btn-sm">
+                <button class="btn btn-outline-primary" (click)="onEditWarehouses(item)">Edit</button>
+              </div>
+            </clr-dg-cell>
+          </clr-dg-row>
+
+          <clr-dg-footer>
+            {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} of {{pagination.totalItems}} คลัง
+            <clr-dg-pagination #pagination [clrDgPageSize]="50"></clr-dg-pagination>
+          </clr-dg-footer>
+        </clr-datagrid>
+      </clr-tab-content>
+    </ng-template>
+  </clr-tab>
+
+  <clr-tab>
+    <button clrTabLink>ข้อมูลผู้ประกอบการ</button>
+    <ng-template [(clrIfActive)]="managementActive">
+      <clr-tab-content>
+        <div class="row">
+          <div class="col-xl-12 col-lg-12 col-md-7 col-sm-7" style="padding: 1em">
+            <div class="card">
+              <div style="padding: 1em;">
+                <img src="../../../assets/pic/txt.png" height="50" width="50" style="margin-right:1em "> อัพโหลดไฟล์ COMPANY.TXT
+                <button class="btn btn-md" (click)="selectPath()">เลือกไฟล์</button>
+                <input type="text" [(ngModel)]="path" disabled>
+                <button style="float:right;" class="btn btn-success" (click)="importLabeler()">Import</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="padding-top:1em ">
+          <clr-datagrid>
+            <clr-dg-column>ชื่อผู้ประกอบการ</clr-dg-column>
+            <clr-dg-column>ที่อยู่</clr-dg-column>
+            <clr-dg-column>เบอร์โทร</clr-dg-column>
+            <clr-dg-column>แก้ไข</clr-dg-column>
+            <clr-dg-row *clrDgItems="let item of labelersRs" [clrDgItem]="item">
+              <clr-dg-cell>{{item.labeler_name}}</clr-dg-cell>
+              <clr-dg-cell>{{item.address}}</clr-dg-cell>
+              <clr-dg-cell>{{item.phone}}</clr-dg-cell>
+              <clr-dg-cell style="text-align: center">
+                <div class="btn-group btn-sm">
+                  <button class="btn btn-outline-primary" (click)="onEditLabelers(item)">Edit</button>
+                </div>
+              </clr-dg-cell>
+            </clr-dg-row>
+
+            <clr-dg-footer>
+              {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} of {{pagination.totalItems}} รายการ
+              <clr-dg-pagination #pagination [clrDgPageSize]="50"></clr-dg-pagination>
+            </clr-dg-footer>
+          </clr-datagrid>
+        </div>
+      </clr-tab-content>
+    </ng-template>
+  </clr-tab>
+
+  <clr-tab>
+    <button clrTabLink>รายการยา</button>
+    <ng-template [(clrIfActive)]="cloudActive">
+      <clr-tab-content>
+          <div class="row">
+              <div class="col-xl-12 col-lg-12 col-md-7 col-sm-7" style="padding: 1em">
+                <div class="card">
+                  <div style="padding: 1em;">
+                    <img src="../../../assets/pic/txt.png" height="50" width="50" style="margin-right:1em "> อัพโหลดไฟล์ COMPANY.TXT
+                    <button class="btn btn-md" (click)="selectPath()">เลือกไฟล์</button>
+                    <input type="text" [(ngModel)]="path" disabled>
+                    <button style="float:right;" class="btn btn-success" (click)="importGenerics()">Import</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+      </clr-tab-content>
+    </ng-template>
+  </clr-tab>
+</clr-tabs>
+
+<clr-modal [(clrModalOpen)]="openModal_labeler">
+  <h3 class="modal-title">แก้ไขข้อมูลผ้ประกอบการ</h3>
+  <div class="modal-body">
+    <span>ชื่อผู้ประกอบการ
+      <input type="text" [(ngModel)]="lablerEdit.labeler_name" style="width: 100%;">
+    </span>
+    <br>
+    <br>
+    <span>ที่อยู่
+      <input type="text" [(ngModel)]="lablerEdit.address" style="width: 100%;">
+    </span>
+    <br>
+    <br>
+    <span>เบอร์โทร
+      <input type="text" [(ngModel)]="lablerEdit.phone" style="width: 100%;">
+    </span>
+    <br>
+    <br>
   </div>
-</div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline" (click)="closeModal()">Cancel</button>
+    <button type="button" class="btn btn-primary" (click)="confirmEditLabelers()">OK</button>
+  </div>
+</clr-modal>
+<clr-modal [(clrModalOpen)]="openModal_warehouse">
+  <h3 class="modal-title">แก้ไขข้อมูลคลัง</h3>
+  <div class="modal-body">
+    <span>ชื่อคลัง
+      <input type="text" [(ngModel)]="warehousesEdit.warehouse_name" style="width: 100%;">
+    </span>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline" (click)="closeModal()">Cancel</button>
+    <button type="button" class="btn btn-primary" (click)="confirmEditWarehouses()">OK</button>
+  </div>
+</clr-modal>
+
+<app-loading-modal #modalLoading></app-loading-modal>
