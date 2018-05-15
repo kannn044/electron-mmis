@@ -1,3 +1,4 @@
+import { async } from '@angular/core/testing';
 import { Injectable } from '@angular/core';
 import { IConnection } from 'mysql';
 
@@ -95,16 +96,36 @@ export class ImportService {
     return true;
   }
 
-  importWareHouses(db: IConnection, data: any) {
-    data.forEach(v => {
-      const sql = `INSERT INTO wm_warehouses SET ?`;
-      db.query(sql, v, function (error, results, fields) {
-        if (error) {
-          throw error;
-        }
-      });
-    });
-    return true;
+  async importWareHouses(db: IConnection, data: any) {
+    function insertDept(name) {
+      return new Promise(fn);
+      function fn(resolve, reject) {
+        const sql = `INSERT INTO wm_warehouses SET ?`;
+        db.query(sql, name, function (err, rows, fields) {
+          if (err) {
+            console.log(err);
+            return reject(err);
+          } else {
+            return resolve(rows);
+          }
+        });
+      }
+    }
+    function checkFor(params: any) {
+      return new Promise(fore);
+      async function fore(resolve, reject) {
+        await params.forEach(async (v) => {
+          const rs: any = await insertDept(v);
+          if (rs.insertId === params.length) {
+          //   console.log(rs.message);
+          //   return reject(rs.message);
+          // } else {
+            return resolve(true);
+          }
+        });
+      }
+    }
+    return checkFor(data);
   }
 
   importLabeler(db: IConnection, data: any) {
@@ -297,8 +318,8 @@ export class ImportService {
   getUnitGenericsId(db: IConnection) {
     return new Promise((resolve, reject) => {
       db.query(`SELECT mup.unit_generic_id,mp.product_id,mp.product_name,max( mup.qty ) AS max_qty FROM mm_unit_generics mup JOIN mm_products mp ON mp.generic_id = mup.generic_id GROUP BY mp.product_id, mp.product_name`, (error: any, results: any) => {
-          resolve(results);
-        });
+        resolve(results);
+      });
     });
   }
 
@@ -471,7 +492,7 @@ export class ImportService {
       });
     });
   }
-  
+
   clearDataWmProducts(db: IConnection) {
     return new Promise((resolve, reject) => {
       db.query(`TRUNCATE TABLE wm_products`, (error: any, results: any) => {

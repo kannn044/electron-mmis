@@ -6,7 +6,7 @@ import { IConnection } from 'mysql';
 import { AlertService } from '../../alert.service';
 import { ImportService } from '../../admin/import.service';
 
-const { dialog } = require('electron').remote
+const { dialog } = require('electron').remote;
 
 import xlsx from 'node-xlsx';
 
@@ -149,8 +149,8 @@ export class ImportExcelComponent implements OnInit {
               'warehouse_name': excelData[y][16],
               'tmt_id': excelData[y][17]
             };
-            if(excelData[y][0] !== undefined) arData.push(obj);
-            if(excelData[y][1] !== undefined) arData1.push(obj1);
+            if (excelData[y][0] !== undefined) { arData.push(obj); }
+            if (excelData[y][1] !== undefined) { arData1.push(obj1); }
           }
         }
         if (x === 0) { this.rs1 = await this.signPeople(db, arData); }
@@ -214,7 +214,7 @@ export class ImportExcelComponent implements OnInit {
           'is_manufacturer': 'Y',
           'short_code': v.description
         };
-        if (v.labeler_name !== null) labeler.push(objLabeler);
+        if (v.labeler_name !== null) { labeler.push(objLabeler); }
       });
       await this.importService.insertLabeler(db, labeler);
       await this.importService.deleteTempLabeler(db);
@@ -248,7 +248,7 @@ export class ImportExcelComponent implements OnInit {
           'lname': v.lname,
           'position_id': position_id
         };
-        if(v.fname !== null) peoples.push(objPeoples);
+        if (v.fname !== null) { peoples.push(objPeoples); }
       });
 
       await this.importService.deleteTempPeople(db);
@@ -343,7 +343,7 @@ export class ImportExcelComponent implements OnInit {
             'cost': v.unit_cost,
             'generic_id': v.generic_id
           };
-          if(v.generic_name !== null) generics.push(objGenerics);
+          if (v.generic_name !== null) { generics.push(objGenerics); }
           unitGenerics.push(objUnitGenerics);
 
           if (v.conversion > 1) {
@@ -377,7 +377,7 @@ export class ImportExcelComponent implements OnInit {
             'm_labeler_id': m_labeler_id,
             'v_labeler_id': v_labeler_id
           };
-          if(v.product_name !== null) products.push(objProducts);
+          if (v.product_name !== null) { products.push(objProducts); }
         });
 
         const rsGenerics = await this.importService.insertGenerics(db, generics);
@@ -403,7 +403,7 @@ export class ImportExcelComponent implements OnInit {
               'lot_no': Math.random().toString(6).substr(2, 9),
               'unit_generic_id': unit_generic_id
             };
-            if(v.product_name !== null) wmProducts.push(objwmProducts);
+            if (v.product_name !== null) { wmProducts.push(objwmProducts); }
           });
 
           await this.importService.insertWmProducts(db, wmProducts);
@@ -511,7 +511,7 @@ export class ImportExcelComponent implements OnInit {
       .catch((error) => {
         this.alertService.error();
         console.log(error.message);
-      })
+      });
   }
 
   async confirmEditGenerics() {
@@ -525,7 +525,7 @@ export class ImportExcelComponent implements OnInit {
       .catch((error) => {
         this.alertService.error();
         console.log(error.message);
-      })
+      });
   }
 
   async getGeneric() {
@@ -537,6 +537,6 @@ export class ImportExcelComponent implements OnInit {
   //   const db: IConnection = this.connectionService.createConnection('config.json');
   //   this.openModal_generics = true;
 
-    
+
   // }
 }
