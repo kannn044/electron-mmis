@@ -24,10 +24,7 @@ const routes: Routes = [
       { path: 'invs', component: InvsConnectionComponent },
       { path: 'invc', component: InvcConnectionComponent },
       { path: 'invs-sync', component: InvsSyncComponent },
-<<<<<<< HEAD
       { path: 'invc-sync', component: InvcSyncComponent },
-=======
->>>>>>> 037f377684c2877f9566deff5613b791b4bf515d
       { path: 'invdos', component: InvdosComponent },
       { path: '**', component: PageNotFoundComponent },
     ]
