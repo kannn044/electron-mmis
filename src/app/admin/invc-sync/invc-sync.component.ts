@@ -49,29 +49,31 @@ export class InvcSyncComponent implements OnInit {
         'wm_warehouses',
         'bm_bgtype',
         'bm_budget_source',
-        'wm_requisition_type'];
+        'wm_requisition_type',
+        'wm_products'];
       await dbInv.connect();
       await dbMmis.connect();
-      // await this.invcService.truncate(dbMmis, tables);
-      // await this.getUnits(dbInv, dbMmis);
-      // await this.getGenericDosages(dbInv, dbMmis);
-      // await this.getGenericAccounts(dbInv, dbMmis);
-      // await this.getGenericTypes(dbInv, dbMmis);
-      // // await this.getGenericHosp(dbInv, dbMmis);
-      // await this.getGenericGroup(dbInv, dbMmis);
-      // await this.getLabelers(dbInv, dbMmis);
-      // await this.getGenerics(dbInv, dbMmis);
-      // await this.getUnitGenerics(dbInv, dbMmis);
-      // await this.getProducts(dbInv, dbMmis);
-      // await this.getReceiveTypes(dbInv, dbMmis);
-      // await this.getWarehouses(dbInv, dbMmis);
-      // await this.getBgTypes(dbInv, dbMmis);
-      // await this.getBgSource(dbInv, dbMmis);
-      // await this.getRequisitionType(dbInv, dbMmis);
-      // await this.insertAdmin(dbMmis);
+      await this.invcService.truncate(dbMmis, tables);
+      await this.getUnits(dbInv, dbMmis);
+      await this.getGenericDosages(dbInv, dbMmis);
+      await this.getGenericAccounts(dbInv, dbMmis);
+      await this.getGenericTypes(dbInv, dbMmis);
+      // await this.getGenericHosp(dbInv, dbMmis);
+      await this.getGenericGroup(dbInv, dbMmis);
+      await this.getLabelers(dbInv, dbMmis);
+      await this.getGenerics(dbInv, dbMmis);
+      await this.getUnitGenerics(dbInv, dbMmis);
+      await this.getProducts(dbInv, dbMmis);
+      await this.getReceiveTypes(dbInv, dbMmis);
+      await this.getWarehouses(dbInv, dbMmis);
+      await this.getBgTypes(dbInv, dbMmis);
+      await this.getBgSource(dbInv, dbMmis);
+      await this.getRequisitionType(dbInv, dbMmis);
+      await this.insertAdmin(dbMmis);
       await this.insertPeople(dbMmis);
       await this.insertUser(dbMmis);
       await this.insertPeopleUser(dbMmis);
+      // await this.getRemainQty(dbInv, dbMmis);
       await dbInv.end();
       await dbMmis.end();
       await this.modalLoading.hide(6000);
@@ -125,8 +127,6 @@ export class InvcSyncComponent implements OnInit {
   async getGenericAccounts(dbInv, dbMmis) {
     return new Promise(async (resolve, reject) => {
       try {
-        dbInv.connect();
-        dbMmis.connect();
         const accountRs: any = await this.invcService.getAccountInvc(dbInv);
         const accounts = [];
         for (const u of accountRs) {
@@ -153,8 +153,6 @@ export class InvcSyncComponent implements OnInit {
   async getGenericTypes(dbInv, dbMmis) {
     return new Promise(async (resolve, reject) => {
       try {
-        dbInv.connect();
-        dbMmis.connect();
         const genericTypesRs: any = await this.invcService.getGenericTypeInvc(dbInv);
         const genericTypes = [];
         for (const u of genericTypesRs) {
@@ -180,8 +178,6 @@ export class InvcSyncComponent implements OnInit {
   async getGenericDosages(dbInv, dbMmis) {
     return new Promise(async (resolve, reject) => {
       try {
-        dbInv.connect();
-        dbMmis.connect();
         const dosagesRs: any = await this.invcService.getDosageInvc(dbInv);
         const dosages = [];
         let i = 1;
@@ -437,8 +433,6 @@ export class InvcSyncComponent implements OnInit {
   async getReceiveTypes(dbInv, dbMmis) {
     return new Promise(async (resolve, reject) => {
       try {
-        dbInv.connect();
-        dbMmis.connect();
         const receiveTypesRs: any = await this.invcService.getReceiveTypeInvc(dbInv);
         const receiveTypes = [];
         for (const u of receiveTypesRs) {
@@ -464,8 +458,6 @@ export class InvcSyncComponent implements OnInit {
   async getWarehouses(dbInv, dbMmis) {
     return new Promise(async (resolve, reject) => {
       try {
-        dbInv.connect();
-        dbMmis.connect();
         const rs: any = await this.invcService.getWarehousesInvc(dbInv);
         const array = [];
         for (const u of rs) {
@@ -492,8 +484,6 @@ export class InvcSyncComponent implements OnInit {
   async getBgTypes(dbInv, dbMmis) {
     return new Promise(async (resolve, reject) => {
       try {
-        dbInv.connect();
-        dbMmis.connect();
         const rs: any = await this.invcService.getBgTypeInvc(dbInv);
         const array = [];
         for (const u of rs) {
@@ -519,8 +509,6 @@ export class InvcSyncComponent implements OnInit {
   async getBgSource(dbInv, dbMmis) {
     return new Promise(async (resolve, reject) => {
       try {
-        dbInv.connect();
-        dbMmis.connect();
         const rs: any = await this.invcService.getBgSourceInvc(dbInv);
         const array = [];
         for (const u of rs) {
@@ -546,8 +534,6 @@ export class InvcSyncComponent implements OnInit {
   async getRequisitionType(dbInv, dbMmis) {
     return new Promise(async (resolve, reject) => {
       try {
-        dbInv.connect();
-        dbMmis.connect();
         const rs: any = await this.invcService.getRequisitionTypeInvc(dbInv);
         const array = [];
         for (const u of rs) {
@@ -697,6 +683,32 @@ export class InvcSyncComponent implements OnInit {
       }
     });
   }
+
+  // async getRemainQty(dbInv, dbMmis) {
+  //   return new Promise(async (resolve, reject) => {
+  //     try {
+  //       const rs: any = await this.invcService.getRemainQtyInvc(dbInv);
+  //       const array = [];
+  //       for (const u of rs) {
+  //         const obj = {
+  //           'requisition_type_id': +u.DISP_TYPE_CODE,
+  //           'requisition_type': u.DISP_NAME,
+  //           'requisition_type_desc': u.DISP_NAME
+  //         };
+  //         array.push(obj);
+  //       }
+  //       this.invcService.insert(dbMmis, 'wm_requisition_type', array)
+  //         .then(() => {
+  //           resolve();
+  //         })
+  //         .catch(() => {
+  //           reject();
+  //         });
+  //     } catch (error) {
+  //       console.log(error);
+  //     }
+  //   });
+  // }
 
   checkNull(data: any) { // ถ้าว่าง ให้ return false;
     if (data == null || data === '' || data === ' ') {
