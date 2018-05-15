@@ -6,7 +6,7 @@ import { IConnection } from 'mysql';
 import { AlertService } from '../../alert.service';
 import { ImportService } from '../../admin/import.service';
 
-const { dialog } = require('electron').remote
+const { dialog } = require('electron').remote;
 
 import xlsx from 'node-xlsx';
 
@@ -88,6 +88,7 @@ export class ImportExcelComponent implements OnInit {
               'lname': excelData[y][2],
               'position_name': excelData[y][3]
             };
+            y === 1 ? arData.push({ 'title_name': 'นาย', 'fname': 'ผู้ดูแลระบบ', 'lname': null, 'position_name': 'นักวิชาการคอมพิวเตอร์' }) : null;
             arData.push(obj);
           }
 
@@ -149,8 +150,8 @@ export class ImportExcelComponent implements OnInit {
               'warehouse_name': excelData[y][16],
               'tmt_id': excelData[y][17]
             };
-            if(excelData[y][0] !== undefined) arData.push(obj);
-            if(excelData[y][1] !== undefined) arData1.push(obj1);
+            if (excelData[y][0] !== undefined) { arData.push(obj); }
+            if (excelData[y][1] !== undefined) { arData1.push(obj1); }
           }
         }
         if (x === 0) { this.rs1 = await this.signPeople(db, arData); }
@@ -214,7 +215,7 @@ export class ImportExcelComponent implements OnInit {
           'is_manufacturer': 'Y',
           'short_code': v.description
         };
-        if (v.labeler_name !== null) labeler.push(objLabeler);
+        if (v.labeler_name !== null) { labeler.push(objLabeler); }
       });
       await this.importService.insertLabeler(db, labeler);
       await this.importService.deleteTempLabeler(db);
@@ -248,7 +249,7 @@ export class ImportExcelComponent implements OnInit {
           'lname': v.lname,
           'position_id': position_id
         };
-        if(v.fname !== null) peoples.push(objPeoples);
+        if (v.fname !== null) { peoples.push(objPeoples); }
       });
 
       await this.importService.deleteTempPeople(db);
@@ -343,7 +344,7 @@ export class ImportExcelComponent implements OnInit {
             'cost': v.unit_cost,
             'generic_id': v.generic_id
           };
-          if(v.generic_name !== null) generics.push(objGenerics);
+          if (v.generic_name !== null) { generics.push(objGenerics); }
           unitGenerics.push(objUnitGenerics);
 
           if (v.conversion > 1) {
@@ -357,28 +358,37 @@ export class ImportExcelComponent implements OnInit {
           }
         });
 
-        tmpProductRs.forEach(v => {
+        for (let v of tmpProductRs) {
           const idxPrimaryUnit = _.findIndex(unitsRs, { 'unit_name': v.primary_unit_id });
           const primary_unit_id = idxPrimaryUnit > -1 ? unitsRs[idxPrimaryUnit].unit_id : null;
 
           const idxMlabeler = _.findIndex(labelerRs, { 'labeler_name': v.m_labeler_id });
-          const m_labeler_id = idxMlabeler > -1 ? labelerRs[idxMlabeler].lebeler_id : null;
+          const m_labeler_id = idxMlabeler > -1 ? labelerRs[idxMlabeler].labeler_id : null;
 
           const idxVlabeler = _.findIndex(labelerRs, { 'labeler_name': v.v_labeler_id });
-          const v_labeler_id = idxVlabeler > -1 ? labelerRs[idxVlabeler].lebeler_id : null;
+          const v_labeler_id = idxVlabeler > -1 ? labelerRs[idxVlabeler].labeler_id : null;
+
+          let search = await this.importService.searchTempProducts(db, v.working_code);
+
+          let setWorkingcode: any;
+          if (search[0].count > 1) {
+            setWorkingcode = v.working_code + Math.random().toString(6).substr(2, 3);
+          } else {
+            setWorkingcode = v.working_code + '001';
+          }
 
           const objProducts = {
             'product_id': v.product_id,
             'product_name': v.product_name,
-            'working_code': v.working_code,
+            'working_code': setWorkingcode,
             'generic_id': v.generic_id,
             'primary_unit_id': primary_unit_id,
             'tmt_id': v.tmt_id,
             'm_labeler_id': m_labeler_id,
             'v_labeler_id': v_labeler_id
           };
-          if(v.product_name !== null) products.push(objProducts);
-        });
+          if (v.product_name !== null) products.push(objProducts);
+        }
 
         const rsGenerics = await this.importService.insertGenerics(db, generics);
         const rsProducts = await this.importService.insertProducts(db, products);
@@ -403,7 +413,7 @@ export class ImportExcelComponent implements OnInit {
               'lot_no': Math.random().toString(6).substr(2, 9),
               'unit_generic_id': unit_generic_id
             };
-            if(v.product_name !== null) wmProducts.push(objwmProducts);
+            if (v.product_name !== null) { wmProducts.push(objwmProducts); }
           });
 
           await this.importService.insertWmProducts(db, wmProducts);
@@ -511,7 +521,7 @@ export class ImportExcelComponent implements OnInit {
       .catch((error) => {
         this.alertService.error();
         console.log(error.message);
-      })
+      });
   }
 
   async confirmEditGenerics() {
@@ -525,18 +535,11 @@ export class ImportExcelComponent implements OnInit {
       .catch((error) => {
         this.alertService.error();
         console.log(error.message);
-      })
+      });
   }
 
   async getGeneric() {
     const db: IConnection = this.connectionService.createConnection('config.json');
     this.genericRS = await this.importService.getGeneric(db);
   }
-
-  // async onEditGeneric(item) {
-  //   const db: IConnection = this.connectionService.createConnection('config.json');
-  //   this.openModal_generics = true;
-
-    
-  // }
 }
