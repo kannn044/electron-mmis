@@ -88,7 +88,7 @@ export class ImportExcelComponent implements OnInit {
               'lname': excelData[y][2],
               'position_name': excelData[y][3]
             };
-            y === 1 ? arData.push({ 'title_name': 'นาย', 'fname': 'ผู้ดูแลระบบ', 'lname': null, 'position_name': 'นักวิชาการคอมพิวเตอร์' }) : null;
+            y === 1 ? arData.push({ 'title_name': 'นาย', 'fname': 'ผู้ดูแลระบบ', 'lname': '', 'position_name': 'นักวิชาการคอมพิวเตอร์' }) : null;
             arData.push(obj);
           }
 
@@ -140,7 +140,7 @@ export class ImportExcelComponent implements OnInit {
             };
 
             const obj1 = {
-              'product_name': excelData[y][1],
+              'product_name': excelData[y][1] === undefined ? excelData[y][0] : excelData[y][1],
               'working_code': excelData[y][2],
               'generic_id': excelData[y][2],
               'primary_unit_id': excelData[y][7],
@@ -151,7 +151,7 @@ export class ImportExcelComponent implements OnInit {
               'tmt_id': excelData[y][17]
             };
             if (excelData[y][0] !== undefined) { arData.push(obj); }
-            if (excelData[y][1] !== undefined) { arData1.push(obj1); }
+            if (excelData[y][0] !== undefined) { arData1.push(obj1); }
           }
         }
         if (x === 0) { this.rs1 = await this.signPeople(db, arData); }
@@ -203,7 +203,7 @@ export class ImportExcelComponent implements OnInit {
           'labeler_name': v.labeler_name,
           'description': v.description,
           'nin': v.nin,
-          'labeler_type': v.labeler_type,
+          'labeler_type': v.labeler_type ? v.labeler_type : 1,
           'labeler_status': '1',
           'address': v.address,
           'tambon_code': tambon_code,
@@ -215,7 +215,7 @@ export class ImportExcelComponent implements OnInit {
           'is_manufacturer': 'Y',
           'short_code': v.description
         };
-        if (v.labeler_name !== null) { labeler.push(objLabeler); }
+        if (this.checkNull(v.labeler_name)) { labeler.push(objLabeler); }
       });
       await this.importService.insertLabeler(db, labeler);
       await this.importService.deleteTempLabeler(db);
@@ -249,7 +249,7 @@ export class ImportExcelComponent implements OnInit {
           'lname': v.lname,
           'position_id': position_id
         };
-        if (v.fname !== null) { peoples.push(objPeoples); }
+        if (this.checkNull(v.fname)) { peoples.push(objPeoples); }
       });
 
       await this.importService.deleteTempPeople(db);
@@ -287,7 +287,7 @@ export class ImportExcelComponent implements OnInit {
         const unitNames: any = await this.importService.getUnitsTmp(db);
         const units = [];
         unitNames.forEach(v => {
-          if (v.primary_unit_id !== null) {
+          if (this.checkNull(v.primary_unit_id)) {
             const objUnits = {
               'unit_name': v.primary_unit_id,
               'unit_code': v.primary_unit_id
@@ -344,10 +344,13 @@ export class ImportExcelComponent implements OnInit {
             'cost': v.unit_cost,
             'generic_id': v.generic_id
           };
-          if (v.generic_name !== null) { generics.push(objGenerics); }
-          unitGenerics.push(objUnitGenerics);
 
-          if (v.conversion > 1) {
+          // console.log(objGenerics)
+          // console.log(objUnitGenerics)
+          if (this.checkNull(v.generic_id)) { generics.push(objGenerics); }
+          if (this.checkNull(v.generic_id)) { unitGenerics.push(objUnitGenerics); }
+
+          if (v.conversion > 1 && (this.checkNull(v.generic_id))) {
             unitGenerics.push({
               'from_unit_id': idxPackage,
               'to_unit_id': primary_unit_id,
@@ -371,9 +374,12 @@ export class ImportExcelComponent implements OnInit {
           let search = await this.importService.searchTempProducts(db, v.working_code);
 
           let setWorkingcode: any;
-          if (search[0].count > 1) {
-            setWorkingcode = v.working_code + Math.random().toString(6).substr(2, 3);
-          } else {
+          if (this.checkNull(search)) {
+            if (search[0].count > 1) {
+              setWorkingcode = v.working_code + Math.random().toString(6).substr(2, 3);
+            }
+          }
+          else {
             setWorkingcode = v.working_code + '001';
           }
 
@@ -387,7 +393,7 @@ export class ImportExcelComponent implements OnInit {
             'm_labeler_id': m_labeler_id,
             'v_labeler_id': v_labeler_id
           };
-          if (v.product_name !== null) products.push(objProducts);
+          if (this.checkNull(v.product_name)) products.push(objProducts);
         }
 
         const rsGenerics = await this.importService.insertGenerics(db, generics);
@@ -395,6 +401,7 @@ export class ImportExcelComponent implements OnInit {
         const rsUnitGenerics = await this.importService.insertUnitGenerics(db, unitGenerics);
 
         if (rsGenerics && rsUnitGenerics && rsProducts) {
+
           const unitGernericRs: any = await this.importService.getUnitGenericsId(db);
           const warehousesRS: any = await this.importService.getWarehouses(db);
 
@@ -413,7 +420,8 @@ export class ImportExcelComponent implements OnInit {
               'lot_no': Math.random().toString(6).substr(2, 9),
               'unit_generic_id': unit_generic_id
             };
-            if (v.product_name !== null) { wmProducts.push(objwmProducts); }
+            if (this.checkNull(v.product_name)) { wmProducts.push(objwmProducts); }
+            console.log(objwmProducts);
           });
 
           await this.importService.insertWmProducts(db, wmProducts);
@@ -422,6 +430,8 @@ export class ImportExcelComponent implements OnInit {
           return true;
         } else {
           this.alertService.error();
+          this.importService.deleteTempGenerics(db);
+          this.importService.deleteTempProducts(db);
           return false;
         }
       } catch (error) {
@@ -541,5 +551,13 @@ export class ImportExcelComponent implements OnInit {
   async getGeneric() {
     const db: IConnection = this.connectionService.createConnection('config.json');
     this.genericRS = await this.importService.getGeneric(db);
+  }
+
+  checkNull(data: any) {
+    if (data == null || data === '' || data === ' ' || data === undefined || data === Infinity || data === NaN) {
+      return false;
+    } else {
+      return true;
+    }
   }
 }

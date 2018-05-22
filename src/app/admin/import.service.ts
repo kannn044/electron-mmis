@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { IConnection } from 'mysql';
+import { resolve, reject } from 'q';
 
 @Injectable()
 export class ImportService {
@@ -17,7 +18,7 @@ export class ImportService {
   }
 
   createTmpProductDos(db: IConnection) {
-    const sql = `CREATE TABLE tmp_product_dos (id int NOT NULL AUTO_INCREMENT,c1 varchar(255),c2 varchar(255),c3 varchar(255),c4 varchar(255),c5 varchar(255),c6 varchar(255),c7 varchar(255),c8 varchar(255),c9 varchar(255),c10 varchar(255),c11 varchar(255),PRIMARY KEY(id))`;
+    const sql = `CREATE TABLE tmp_product_dos (id int NOT NULL AUTO_INCREMENT,c1 varchar(255),c2 varchar(255),c3 varchar(255),c4 varchar(255),c5 varchar(255),c6 varchar(255),c7 varchar(255),c8 varchar(255),c9 varchar(255),c10 varchar(255),c11 varchar(255),c12 varchar(255),PRIMARY KEY(id))`;
     db.query(sql, function (error, results, fields) {
       if (error) {
         throw error;
@@ -27,7 +28,7 @@ export class ImportService {
   }
 
   createTmpMappingDos(db: IConnection) {
-    const sql = `CREATE TABLE tmp_mapping_dos (id int NOT NULL AUTO_INCREMENT,c1 varchar(255),c2 varchar(255),PRIMARY KEY(id))`;
+    const sql = `CREATE TABLE tmp_mapping_dos (id int NOT NULL AUTO_INCREMENT,c1 varchar(255),c2 varchar(255),c3 varchar(255),c4 varchar(255),PRIMARY KEY(id))`;
     db.query(sql, function (error, results, fields) {
       if (error) {
         throw error;
@@ -102,7 +103,7 @@ export class ImportService {
     });
     return true;
   }
-  
+
   importGroups(db: IConnection, data: any) {
     data.forEach(v => {
       const sql = `INSERT INTO mm_generic_groups SET ?`;
@@ -114,7 +115,7 @@ export class ImportService {
     });
     return true;
   }
-  
+
   importDosages(db: IConnection, data: any) {
     data.forEach(v => {
       const sql = `INSERT INTO mm_generic_dosages SET ?`;
@@ -236,6 +237,14 @@ export class ImportService {
     });
   }
 
+  searchProducts(db: IConnection, genericId: any) {
+    return new Promise((resolve, reject) => {
+      db.query(`SELECT generic_id,count(generic_id) as count FROM mm_products WHERE generic_id = ${genericId} GROUP BY generic_id`, (error: any, results: any) => {
+        resolve(results);
+      });
+    });
+  }
+
   getProducts(db: IConnection) {
     return new Promise((resolve, reject) => {
       db.query(`SELECT * FROM mm_products`, (error: any, results: any) => {
@@ -308,6 +317,14 @@ export class ImportService {
     });
   }
 
+  getGenerics(db: IConnection) {
+    return new Promise((resolve, reject) => {
+      db.query(`SELECT * FROM mm_generics`, (error: any, results: any) => {
+        resolve(results);
+      });
+    });
+  }
+
   getGeneric(db: IConnection) {
     return new Promise((resolve, reject) => {
       db.query(`SELECT
@@ -349,15 +366,13 @@ export class ImportService {
       db.query(`SELECT
       mg.generic_id,
       mg.generic_name,
-      mp.product_name,
       mul.unit_name AS large_unit,
       max(mug.qty) AS qty,
       mus.unit_name AS small_unit,
       mg.unit_cost,
       mug.cost
     FROM
-      mm_products mp
-      JOIN mm_generics mg ON mg.generic_id = mp.generic_id
+      mm_generics mg
       LEFT JOIN mm_generic_types mgt ON mgt.generic_type_id = mg.generic_type_id
       LEFT JOIN mm_generic_accounts mga ON mga.account_id = mg.account_id
       LEFT JOIN mm_unit_generics mug ON mug.generic_id = mg.generic_id
@@ -371,6 +386,23 @@ export class ImportService {
           resolve(results);
         });
     });
+  }
+
+  getTrade(db: IConnection) {
+    return new Promise((resolve, reject) => {
+      db.query(`SELECT
+        mp.product_name,
+        u.unit_name,
+        mlv.labeler_name as mlv, 
+        mlm.labeler_name as mlm 
+      FROM
+        mm_products mp
+        JOIN mm_units u ON u.unit_id = mp.primary_unit_id
+        LEFT JOIN mm_labelers mlv on mlv.labeler_id = mp.v_labeler_id
+        LEFT JOIN mm_labelers mlm on mlm.labeler_id = mp.m_labeler_id`, (error: any, results: any) => {
+        resolve(results);
+      })
+    })
   }
 
   getUnits(db: IConnection) {
@@ -388,7 +420,7 @@ export class ImportService {
       });
     });
   }
-  
+
   getGroups(db: IConnection) {
     return new Promise((resolve, reject) => {
       db.query(`SELECT * FROM mm_generic_groups`, (error: any, results: any) => {
@@ -480,6 +512,18 @@ export class ImportService {
     return true;
   }
 
+  insertExpired(db: IConnection, data: any) {
+    data.forEach(v => {
+      const sql = `INSERT INTO wm_generic_expired_alert SET ?`;
+      db.query(sql, v, function (error, results, fields) {
+        if (error) {
+          throw error;
+        }
+      });
+    });
+    return true;
+  }
+
   insertProducts(db: IConnection, data: any) {
     data.forEach(v => {
       const sql = `INSERT INTO mm_products SET ?`;
@@ -527,7 +571,7 @@ export class ImportService {
     });
     return true;
   }
-  
+
   insertTmpProductDos(db: IConnection, data: any) {
     data.forEach(v => {
       const sql = `INSERT INTO tmp_product_dos SET ?`;
@@ -711,6 +755,21 @@ export class ImportService {
           } else { resolve(results); }
         });
     });
+  }
+
+  updateLabelersProduct(db: IConnection, data: any) {
+    data.forEach(v => {
+      const sql = `UPDATE mm_products
+      SET m_labeler_id = '${v.m_labeler_id}' ,
+      v_labeler_id = '${v.v_labeler_id}'
+      WHERE generic_id = '${v.generic_id}'`;
+      db.query(sql, v, function (error, results, fields) {
+        if (error) {
+          throw error;
+        }
+      });
+    });
+    return true;
   }
 
   updateWarehouses(db: IConnection, warehousesEdit: any) {

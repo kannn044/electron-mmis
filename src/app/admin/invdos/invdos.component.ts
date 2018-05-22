@@ -24,6 +24,7 @@ const iconv = require('iconv-lite');
 export class InvdosComponent implements OnInit {
 
   path: string;
+  button: boolean = false;
 
   openModal_people: boolean = false;
   openModal_labeler: boolean = false;
@@ -37,9 +38,11 @@ export class InvdosComponent implements OnInit {
   warehousesRS: any = [];
   labelersRs: any = [];
   genericRs: any = [];
+  tradeRs: any = [];
 
   truncate: any = [
     'mm_generic_dosages',
+    'wm_generic_expired_alert',
     'mm_generic_groups',
     'mm_units',
     'mm_unit_generics',
@@ -47,7 +50,8 @@ export class InvdosComponent implements OnInit {
     'mm_products'
   ];
   deleteTmp: any = [
-    'tmp_product_dos'
+    'tmp_mapping_dos',
+    'tmp_products_dos'
   ]
 
   @ViewChild('modalLoading') public modalLoading: any;
@@ -61,13 +65,22 @@ export class InvdosComponent implements OnInit {
     this.getWarehouses();
     this.getLabeler();
     this.getGeneric();
+    this.getTrade();
+  }
+
+  refresh() {
+    this.getWarehouses();
+    this.getLabeler();
+    this.getGeneric();
+    this.getTrade();
   }
 
   selectPath() {
     const path = dialog.showOpenDialog({ properties: ['openFile'] });
     if (path) {
+      this.button = true;
       this.path = path.toString();
-    }
+    } else this.button = false;
   }
 
   closeModal() {
@@ -79,6 +92,7 @@ export class InvdosComponent implements OnInit {
 
   async importWareHouse() {
     const db: IConnection = this.connectionService.createConnection('config.json');
+    await this.importService.deleteTableTmp(db, this.deleteTmp);
     db.connect();
 
     if (this.path) {
@@ -91,7 +105,7 @@ export class InvdosComponent implements OnInit {
           'short_code': fileData[i][0],
           'warehouse_name': fileData[i][1]
         }
-        if (fileData[i][1]) warehouseData.push(obj);
+        if (this.checkNull(fileData[i][1])) warehouseData.push(obj);
       }
 
       await this.importService.clearDataWareHouse(db);
@@ -145,18 +159,17 @@ export class InvdosComponent implements OnInit {
     if (this.path) {
       await this.modalLoading.show();
       let fileData = await this.convertFile(this.path);
-      console.log(fileData)
 
       let labelerData = [];
       for (let i in fileData) {
         const obj = {
           'labeler_name': fileData[i][3] + fileData[i][4] + fileData[i][5],
-          'description': fileData[i][0],
+          'labeler_code': fileData[i][0],
           'is_vendor': fileData[i][1] ? 'Y' : 'N',
           'is_manufacturer': fileData[i][2] ? 'Y' : 'N',
           'phone': fileData[i][10]
         }
-        if (fileData[i][4]) labelerData.push(obj);
+        if (this.checkNull(fileData[i][4])) labelerData.push(obj);
       }
 
       await this.importService.clearDataLabeler(db);
@@ -201,9 +214,9 @@ export class InvdosComponent implements OnInit {
     if (this.path) {
       await this.modalLoading.show();
       let fileData = await this.convertFile(this.path);
-      await this.importService.createTmpProductDos(db);
       await this.importService.truncateTable(db, this.truncate);
-
+      await this.importService.createTmpProductDos(db);
+      // console.log(fileData)
       let productData = [];
       for (let i in fileData) {
         const obj = {
@@ -219,7 +232,7 @@ export class InvdosComponent implements OnInit {
           'c10': fileData[i][10],
           'c11': fileData[i][24]
         }
-        if (fileData[i][2]) productData.push(obj);
+        if (this.checkNull(fileData[i][2])) productData.push(obj);
       }
 
       let rs = await this.importService.insertTmpProductDos(db, productData);
@@ -245,7 +258,8 @@ export class InvdosComponent implements OnInit {
         for (let v of unitsRs) {
           const objUnits = {
             'unit_name': v.c4,
-            'unit_code': v.c4
+            'unit_code': v.c4,
+            'is_primary': 'Y'
           }
           c === 1 ? units.push({ 'unit_name': 'BOX', 'unit_code': 'BOX' }) : null;
           c++;
@@ -270,6 +284,7 @@ export class InvdosComponent implements OnInit {
 
           let generics: any = []
           let products: any = []
+          let expired: any = []
           let unitGenerics: any = []
 
           for (let v of fileData) {
@@ -286,31 +301,42 @@ export class InvdosComponent implements OnInit {
             !unit_cost ? unit_cost = 0 : null;
             unit_cost === Infinity ? unit_cost = 0 : null;
 
+            let generic_type_id = 1;
+            if (v[1] > 3999999) generic_type_id = 2;
+            if (v[1] > 5999999) generic_type_id = 3;
+
             const objGenerics = {
               'generic_id': v[1],
               'generic_name': v[2],
               'working_code': v[1],
               'account_id': 1,
-              'generic_type_id': 1,
-              'primary_unit_id': unit_id,
+              'min_qty': 100,
+              'max_qty': 1000,
+              'generic_type_id': generic_type_id,
+              'primary_unit_id': unit_id ? unit_id : unitsRs[0].unit_id,
               'group_id': group_id,
               'dosage_id': dosage_id,
               'standard_cost': 0,
               'unit_cost': unit_cost
             }
 
-            const objProducts = {
-              'product_id': Math.random().toString(6).substr(2, 10),
-              'product_name': v[5],
-              'working_code': v[1] + Math.random().toString(6).substr(2, 3),
+            const objExpired = {
               'generic_id': v[1],
-              'primary_unit_id': unit_id,
-              'product_group_id': 1
+              'num_days': 180
             }
 
+            // const objProducts = {
+            //   'product_id': Math.random().toString(6).substr(2, 10),
+            //   'product_name': v[5],
+            //   'working_code': v[1] + Math.random().toString(6).substr(2, 3),
+            //   'generic_id': v[1],
+            //   'primary_unit_id': unit_id ? unit_id : unitsRs[0].unit_id,
+            //   'product_group_id': 1
+            // }
+
             const objUnitGenerics = {
-              'from_unit_id': unit_id,
-              'to_unit_id': unit_id,
+              'from_unit_id': unit_id ? unit_id : unitsRs[0].unit_id,
+              'to_unit_id': unit_id ? unit_id : unitsRs[0].unit_id,
               'qty': 1,
               'cost': unit_cost,
               'generic_id': v[1]
@@ -319,19 +345,23 @@ export class InvdosComponent implements OnInit {
             if (v[10] > 1) {
               unitGenerics.push({
                 'from_unit_id': unitsRs[0].unit_id,
-                'to_unit_id': unit_id,
+                'to_unit_id': unit_id ? unit_id : unitsRs[0].unit_id,
                 'qty': v[10],
                 'cost': v[9],
                 'generic_id': v[1]
               });
             }
-            if (v[1] && unit_id) unitGenerics.push(objUnitGenerics);
-            if (v[2] && unit_id) generics.push(objGenerics);
-            if (v[5] && unit_id) products.push(objProducts);
+            if (this.checkNull(v[1]) && this.checkNull(unit_id)) unitGenerics.push(objUnitGenerics);
+            if (this.checkNull(v[2]) && this.checkNull(unit_id)) {
+              generics.push(objGenerics);
+              expired.push(objExpired);
+            }
+            // if (this.checkNull(v[5]) && this.checkNull(unit_id)) products.push(objProducts);
           }
           await this.importService.insertUnitGenerics(db, unitGenerics);
           await this.importService.insertGenerics(db, generics);
-          await this.importService.insertProducts(db, products);
+          await this.importService.insertExpired(db, expired);
+          // await this.importService.insertProducts(db, products);
         }
       }
       else await this.alertService.error();
@@ -344,9 +374,88 @@ export class InvdosComponent implements OnInit {
     await this.alertService.success();
   }
 
+  async importTrade() {
+    const db: IConnection = this.connectionService.createConnection('config.json');
+    db.connect();
+
+    if (this.path) {
+      await this.modalLoading.show();
+      await this.importService.truncateTable(db, ['mm_products']);
+      let fileData = await this.convertFile(this.path);
+
+      let productData = [];
+      for (let i in fileData) {
+        const obj = {
+          'generic_id': fileData[i][0],
+          'v_labeler_code': fileData[i][5],
+          'product_name': fileData[i][2],
+          'conversion': fileData[i][3],
+          'cost': fileData[i][4],
+          'm_labeler_code': fileData[i][1],
+        }
+        if (this.checkNull(fileData[i][3])) productData.push(obj);
+      }
+      let rs = await this.pushProducts(db, productData);
+
+      let rsProducts = await this.importService.insertProducts(db, rs);
+      if (rsProducts) {
+        await this.modalLoading.hide();
+        await this.alertService.success();
+        this.path = '';
+      } else {
+        await this.modalLoading.hide();
+        await this.alertService.error();
+        this.path = '';
+      }
+    }
+  }
+
+  async pushProducts(db: IConnection, data: any) {
+    const products = [];
+
+    const unitsRs: any = await this.importService.getUnits(db);
+    const labelerRs: any = await this.importService.getLabelers(db);
+    const genericRs: any = await this.importService.getGenerics(db);
+
+    for (let v of data) {
+      const idxGenerics = _.findIndex(genericRs, { 'generic_id': v.generic_id });
+      const primary_unit_id = idxGenerics > -1 ? genericRs[idxGenerics].primary_unit_id : null;
+
+      const idxMlabeler = _.findIndex(labelerRs, { 'labeler_code': v.m_labeler_code });
+      const m_labeler_id = idxMlabeler > -1 ? labelerRs[idxMlabeler].labeler_id : null;
+
+      const idxVlabeler = _.findIndex(labelerRs, { 'labeler_code': v.v_labeler_code });
+      const v_labeler_id = idxVlabeler > -1 ? labelerRs[idxVlabeler].labeler_id : null;
+
+      const objProducts = {
+        'product_id': Math.random().toString(12).substr(2, 12),
+        'product_name': v.product_name,
+        'working_code': v.generic_id + Math.random().toString(6).substr(2, 3),
+        'generic_id': v.generic_id,
+        'primary_unit_id': primary_unit_id ? primary_unit_id : unitsRs[0].unit_id,
+        // 'tmt_id': v.tmt_id,
+        'm_labeler_id': m_labeler_id,
+        'v_labeler_id': v_labeler_id
+      };
+      // console.log(products)
+      if (this.checkNull(v.product_name)) products.push(objProducts);
+    }
+    return products;
+  }
+
   async getGeneric() {
+    await this.modalLoading.show();
     const db: IConnection = this.connectionService.createConnection('config.json');
     this.genericRs = await this.importService.getGenericDos(db);
+    await this.modalLoading.hide();
+  }
+
+  async getTrade() {
+    await this.modalLoading.show();
+    const db: IConnection = this.connectionService.createConnection('config.json');
+    this.tradeRs = await this.importService.getTrade(db);
+    //console.log(this.tradeRs)
+    await this.modalLoading.hide();
   }
 
   async mappingLabeler() {
@@ -356,26 +465,71 @@ export class InvdosComponent implements OnInit {
     if (this.path) {
       await this.modalLoading.show();
       let fileData = await this.convertFile(this.path);
-      await this.importService.createTmpMappingDos(db);
+      let createTmp = await this.importService.createTmpMappingDos(db);
 
-      let mapping = [];
-      for (let i in fileData) {
-        const obj = {
-          'c1': fileData[i][1],
-          'c2': fileData[i][2]
+      if (createTmp) {
+        let mapping = [];
+        for (let i in fileData) {
+          const obj = {
+            'c1': fileData[i][0],
+            'c2': fileData[i][6],
+            'c3': fileData[i][7],
+            'c4': fileData[i][1]
+          }
+          if (this.checkNull(fileData[i][0]) && this.checkNull(fileData[i][6]) && this.checkNull(fileData[i][7]) && this.checkNull(fileData[i][1])) mapping.push(obj);
         }
-        if (fileData[i][2]) mapping.push(obj);
-      }
-      let rs = await this.importService.importMapping(db, mapping);
-      if (rs) {
-        let mappingRs = await this.importService.getTmpMapping(db);
-        let labelerRs = await this.importService.getLabelers(db);
-        let productRs = await this.importService.getGenericDos(db);
 
-        for (let v in productRs) {
-          
+        let rs = await this.importService.importMapping(db, mapping);
+        if (rs) {
+          let mappingRs: any = await this.importService.getTmpMapping(db);
+          let labelerRs: any = await this.importService.getLabelers(db);
+          let productRs: any = await this.importService.getGenericDos(db);
+
+          if (mappingRs) {
+            let updateLabeler: any = [];
+            for (let v of productRs) {
+              const idxMapping_v = _.findIndex(mappingRs, { 'c1': v.generic_id });
+              const v_labeler_code = idxMapping_v > -1 ? mappingRs[idxMapping_v].c2 : null;
+
+              const idxMapping_m = _.findIndex(mappingRs, { 'c1': v.generic_id });
+              const m_labeler_code = idxMapping_m > -1 ? mappingRs[idxMapping_m].c3 : null;
+
+              const idxLabelers_v = _.findIndex(labelerRs, { 'labeler_code': v_labeler_code });
+              const v_labeler_id = idxLabelers_v > -1 ? labelerRs[idxLabelers_v].labeler_id : null;
+
+              const idxLabelers_m = _.findIndex(labelerRs, { 'labeler_code': m_labeler_code });
+              const m_labeler_id = idxLabelers_m > -1 ? labelerRs[idxLabelers_m].labeler_id : null;
+
+
+              const objUpdateLabeler = {
+                'generic_id': v.generic_id,
+                'm_labeler_id': m_labeler_id,
+                'v_labeler_id': v_labeler_id,
+              }
+              if (this.checkNull(m_labeler_id) || this.checkNull(v_labeler_id)) updateLabeler.push(objUpdateLabeler);
+            }
+
+            let rs = await this.importService.updateLabelersProduct(db, updateLabeler);
+            if (rs) {
+              await this.modalLoading.hide();
+              await this.alertService.success();
+              await this.importService.deleteTableTmp(db, this.deleteTmp);
+            } else {
+              await this.alertService.error();
+              await this.modalLoading.hide();
+              await this.importService.deleteTableTmp(db, this.deleteTmp);
+            }
+          }
         }
       }
+    }
+  }
+
+  checkNull(data: any) {
+    if (data == null || data === '' || data === ' ' || data === undefined || data === Infinity || data === NaN) {
+      return false;
+    } else {
+      return true;
     }
   }
 
