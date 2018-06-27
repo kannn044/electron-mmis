@@ -132,7 +132,7 @@
           <clr-dg-column>คงคลัง</clr-dg-column>
           <clr-dg-column>คลัง</clr-dg-column>
           <!-- <clr-dg-column>แก้ไข</clr-dg-column> -->
-          <clr-dg-row *clrDgItems="let item of genericRS" [clrDgItem]="item">
+          <clr-dg-row *ngFor="let item of genericRS" [clrDgItem]="item">
             <clr-dg-cell>{{item.generic_name}}</clr-dg-cell>
             <clr-dg-cell>{{item.product_name}}</clr-dg-cell>
             <clr-dg-cell>{{item.large_unit}}</clr-dg-cell>

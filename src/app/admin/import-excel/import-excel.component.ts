@@ -76,6 +76,8 @@ export class ImportExcelComponent implements OnInit {
       for (let x = 0; x < workSheetsFromFile.length; x++) {
         const excelData = workSheetsFromFile[x].data;
 
+        console.log(excelData);
+
         const arData: any = [];
         const arData1: any = [];
 
@@ -154,16 +156,34 @@ export class ImportExcelComponent implements OnInit {
             if (excelData[y][0] !== undefined) { arData1.push(obj1); }
           }
         }
-        if (x === 0) { this.rs1 = await this.signPeople(db, arData); }
-        if (x === 1) { this.rs2 = await this.signLabeler(db, arData); }
-        if (x === 2) { this.rs3 = await this.signWareHouses(db, arData); }
-        if (x === 3) { this.rs4 = await this.signGenerics(db, arData, arData1); }
+
+        if (x === 0) {
+          if (arData.length > 0) {
+            this.rs1 = await this.signPeople(db, arData);
+          }
+        }
+        if (x === 1) {
+          if (arData.length > 0) {
+            this.rs2 = await this.signLabeler(db, arData);
+          }
+        }
+        if (x === 2) {
+          if (arData.length > 0) {
+            this.rs3 = await this.signWareHouses(db, arData);
+          }
+        }
+        if (x === 3) {
+          if (arData.length > 0 || arData1.length > 0) {
+            this.rs4 = await this.signGenerics(db, arData, arData1);
+          }
+        }
       }
     } else {
       this.alertService.error('กรุณาเลือกไฟล์');
+      await this.modalLoading.hide();
     }
 
-    if (this.rs1 && this.rs2 && this.rs3 && this.rs4) {
+    if (this.rs1 || this.rs2 || this.rs3 || this.rs4) {
       await this.getpeople();
       await this.getLabelers();
       await this.getWarehouses();
@@ -274,6 +294,7 @@ export class ImportExcelComponent implements OnInit {
     await this.importService.clearDataProducts(db);
     await this.importService.clearDataWmProducts(db);
     await this.importService.clearDataUnitGenerics(db);
+    await this.importService.clearExpiredAlert(db);
 
     await this.importService.createTmpGenerics(db);
     await this.importService.createTmpProducts(db);
@@ -310,6 +331,7 @@ export class ImportExcelComponent implements OnInit {
         const generics = [];
         const products = [];
         const wmProducts = [];
+        const expired = [];
 
         tmpGenericRs.forEach(v => {
           const idxUnitGenerics = _.findIndex(unitsRs, { 'unit_name': v.primary_unit_id });
@@ -345,8 +367,12 @@ export class ImportExcelComponent implements OnInit {
             'generic_id': v.generic_id
           };
 
-          // console.log(objGenerics)
-          // console.log(objUnitGenerics)
+          const objExpired = {
+            'generic_id': v.generic_id,
+            'num_days': 180
+          }
+
+          if (this.checkNull(v.generic_id)) { expired.push(objExpired); }
           if (this.checkNull(v.generic_id)) { generics.push(objGenerics); }
           if (this.checkNull(v.generic_id)) { unitGenerics.push(objUnitGenerics); }
 
@@ -396,6 +422,7 @@ export class ImportExcelComponent implements OnInit {
           if (this.checkNull(v.product_name)) products.push(objProducts);
         }
 
+        await this.importService.insertExpired(db, expired);
         const rsGenerics = await this.importService.insertGenerics(db, generics);
         const rsProducts = await this.importService.insertProducts(db, products);
         const rsUnitGenerics = await this.importService.insertUnitGenerics(db, unitGenerics);
@@ -421,7 +448,6 @@ export class ImportExcelComponent implements OnInit {
               'unit_generic_id': unit_generic_id
             };
             if (this.checkNull(v.product_name)) { wmProducts.push(objwmProducts); }
-            console.log(objwmProducts);
           });
 
           await this.importService.insertWmProducts(db, wmProducts);
@@ -551,6 +577,7 @@ export class ImportExcelComponent implements OnInit {
   async getGeneric() {
     const db: IConnection = this.connectionService.createConnection('config.json');
     this.genericRS = await this.importService.getGeneric(db);
+    console.log(this.genericRS);
   }
 
   checkNull(data: any) {

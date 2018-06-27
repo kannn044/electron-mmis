@@ -698,6 +698,16 @@ export class ImportService {
     });
   }
 
+  clearExpiredAlert(db: IConnection) {
+    return new Promise((resolve, reject) => {
+      db.query(`TRUNCATE TABLE wm_generic_expired_alert`, (error: any, results: any) => {
+        if (error) {
+          reject(error);
+        } else { resolve(results); }
+      });
+    });
+  }
+
   clearDataWmProducts(db: IConnection) {
     return new Promise((resolve, reject) => {
       db.query(`TRUNCATE TABLE wm_products`, (error: any, results: any) => {
