@@ -216,70 +216,98 @@ export class InvdosComponent implements OnInit {
       let fileData = await this.convertFile(this.path);
       await this.importService.truncateTable(db, this.truncate);
       await this.importService.createTmpProductDos(db);
-      // console.log(fileData)
+
       let productData = [];
       for (let i in fileData) {
         const obj = {
-          'c1': fileData[i][1],
-          'c2': fileData[i][2],
-          'c3': fileData[i][3],
-          'c4': fileData[i][4],
-          'c5': fileData[i][5],
-          'c6': fileData[i][6],
-          'c7': fileData[i][7],
-          'c8': fileData[i][8],
-          'c9': fileData[i][9],
-          'c10': fileData[i][10],
-          'c11': fileData[i][24]
+          'RECNUM': fileData[i][0],
+          'STANDARD_CODE': fileData[i][1],
+          'WORKING_CODE': '',
+          'DRUG_NAME_KEY': '',
+          'DRUG_NAME': fileData[i][2],
+          'DOSAGE_FORM': fileData[i][3],
+          'SALE_UNIT': fileData[i][4],
+          'COMPOSITION': fileData[i][5],
+          'GROUP_KEY': fileData[i][6],
+          'GROUP_NAME': fileData[i][6],
+          'STD_PRICE1': fileData[i][7],
+          'STD_RATIO1': fileData[i][8],
+          'STD_PRICE2': fileData[i][9],
+          'STD_RATIO2': fileData[i][10],
+          'STD_PRICE3': fileData[i][11],
+          'STD_RATIO3': fileData[i][12],
+          'SALE_UNIT_PRICE': fileData[i][13],
+          'TOTAL_COST': fileData[i][14],
+          'QTY_ON_HAND': fileData[i][15],
+          'REORDER_QTY': fileData[i][16],
+          'MIN_LEVEL': fileData[i][17],
+          'RATE_PER_MONTH': fileData[i][18],
+          'PRODUCTION': fileData[i][19],
+          'OK': fileData[i][20],
+          'TOTAL_VALUE': fileData[i][21],
+          'WORK_CODE_KEY': fileData[i][22],
+          'MAX_LEVEL': fileData[i][23],
+          'SPECIAL_CODE': fileData[i][24],
+          'DATE_ENTER': fileData[i][25],
+          'GROUP_CODE': fileData[i][26],
+          'SUPPLY_TYPE': fileData[i][27],
+          'ED_LIST_CODE': fileData[i][28],
+          'RESERVE1': fileData[i][29],
+          'RESERVE2': fileData[i][30],
+          'RESERVE3': fileData[i][31],
+          'NOTE': fileData[i][32],
+          'LOCATION': fileData[i][33]
         }
         if (this.checkNull(fileData[i][2])) productData.push(obj);
       }
+
+      console.log(productData);
 
       let rs = await this.importService.insertTmpProductDos(db, productData);
       if (rs) {
         let tmpProductDos: any = await this.importService.getTempProductDos(db);
         let dosagesRs: any = await this.importService.getTempProductDosages(db);
         let unitsRs: any = await this.importService.getTempProductUnits(db);
-        let groupsRs: any = await this.importService.getTempProductGroups(db);
+        // let groupsRs: any = await this.importService.getTempProductGroups(db);
 
         let dosages = [];
         let units = [];
-        let groups = [];
+        //   let groups = [];
 
         let c: number = 1;
 
         for (let v of dosagesRs) {
           const objDosage = {
-            'dosage_name': v.c3
+            'dosage_name': v.DOSAGE_FORM
           }
-          if (v.c3) dosages.push(objDosage);
+          if (v.DOSAGE_FORM) dosages.push(objDosage);
         }
 
         for (let v of unitsRs) {
           const objUnits = {
-            'unit_name': v.c4,
-            'unit_code': v.c4,
+            'unit_name': v.SALE_UNIT,
+            'unit_code': v.SALE_UNIT,
             'is_primary': 'Y'
           }
           c === 1 ? units.push({ 'unit_name': 'BOX', 'unit_code': 'BOX' }) : null;
           c++;
-          if (v.c4) units.push(objUnits);
+          if (v.SALE_UNIT) units.push(objUnits);
         }
 
-        for (let v of groupsRs) {
-          const objGroups = {
-            'group_name': v.c6
-            // 'group_code': v.c11
-          }
-          if (v.c6) groups.push(objGroups);
-        }
+        //   for (let v of groupsRs) {
+        //     const objGroups = {
+        //       'group_name': v.c6
+        //       // 'group_code': v.c11
+        //     }
+        //     if (v.c6) groups.push(objGroups);
+        //   }
         let rs1 = await this.importService.importUnits(db, units);
         let rs2 = await this.importService.importDosages(db, dosages);
-        let rs3 = await this.importService.importGroups(db, groups);
+        //   let rs3 = await this.importService.importGroups(db, groups);
 
-        if (rs1 && rs2 && rs3) {
+        if (rs1 && rs2) {
           let unitsRs: any = await this.importService.getUnits(db);
-          let groupsRs: any = await this.importService.getGroups(db);
+          // let groupsRs: any = await this.importService.getGroups(db);
           let dosageRs: any = await this.importService.getDosages(db);
 
           let generics: any = []
@@ -287,41 +315,52 @@ export class InvdosComponent implements OnInit {
           let expired: any = []
           let unitGenerics: any = []
 
-          for (let v of fileData) {
-            const idxUnits = _.findIndex(unitsRs, { 'unit_name': v[4] });
+          for (let v of tmpProductDos) {
+            const idxUnits = _.findIndex(unitsRs, { 'unit_name': v.SALE_UNIT });
             const unit_id = idxUnits > -1 ? unitsRs[idxUnits].unit_id : null;
 
-            const idxDosage = _.findIndex(dosageRs, { 'dosage_name': v[3] });
+            const idxDosage = _.findIndex(dosageRs, { 'dosage_name': v.DOSAGE_FORM });
             const dosage_id = idxDosage > -1 ? dosageRs[idxDosage].dosage_id : null;
 
-            const idxGroup = _.findIndex(groupsRs, { 'group_name': v[6] });
-            const group_id = idxGroup > -1 ? groupsRs[idxGroup].group_id : null;
+            // const idxGroup = _.findIndex(groupsRs, { 'group_name': v[6] });
+            // const group_id = idxGroup > -1 ? groupsRs[idxGroup].group_id : null;
 
-            let unit_cost = v[9] / v[10];
-            !unit_cost ? unit_cost = 0 : null;
-            unit_cost === Infinity ? unit_cost = 0 : null;
+            let unit_cost = v.STD_PRICE1 > 0 ? v.STD_PRICE1 / v.STD_RATIO1
+              : v.STD_PRICE2 > 0 ? v.STD_PRICE2 / v.STD_RATIO2
+                : v.STD_PRICE3 > 0 ? v.STD_PRICE3 / v.STD_RATIO3
+                  : 0;
+
+            let pack_ratio = v.STD_RATIO1 > 0 ? v.STD_RATIO1
+              : v.STD_RATIO2 > 0 ? v.STD_RATIO2
+                : v.STD_RATIO3 ? v.STD_RATIO3
+                  : 0;
+
+            let price = v.STD_PRICE1 > 0 ? v.STD_PRICE1
+              : v.STD_PRICE2 > 0 ? v.STD_PRICE2
+                : v.STD_PRICE3 ? v.STD_PRICE3
+                  : 0;
 
             let generic_type_id = 1;
-            if (v[1] > 3999999) generic_type_id = 2;
-            if (v[1] > 5999999) generic_type_id = 3;
+            if (v.STANDARD_CODE > 3999999) generic_type_id = 2;
+            if (v.STANDARD_CODE > 5999999) generic_type_id = 3;
 
             const objGenerics = {
-              'generic_id': v[1],
-              'generic_name': v[2],
-              'working_code': v[1],
-              'account_id': 1,
+              'generic_id': v.STANDARD_CODE,
+              'generic_name': v.DRUG_NAME,
+              'working_code': v.STANDARD_CODE,
+              'account_id': v.SPECIAL_CODE ? 1 : 3,
               'min_qty': 100,
               'max_qty': 1000,
               'generic_type_id': generic_type_id,
               'primary_unit_id': unit_id ? unit_id : unitsRs[0].unit_id,
-              'group_id': group_id,
+              // 'group_id': group_id,
               'dosage_id': dosage_id,
-              'standard_cost': 0,
+              'standard_cost': unit_cost,
               'unit_cost': unit_cost
             }
 
             const objExpired = {
-              'generic_id': v[1],
+              'generic_id': v.STANDARD_CODE,
               'num_days': 180
             }
 
@@ -342,17 +381,17 @@ export class InvdosComponent implements OnInit {
               'generic_id': v[1]
             };
 
-            if (v[10] > 1) {
+            if (pack_ratio > 1 && v.STANDARD_CODE) {
               unitGenerics.push({
                 'from_unit_id': unitsRs[0].unit_id,
                 'to_unit_id': unit_id ? unit_id : unitsRs[0].unit_id,
-                'qty': v[10],
-                'cost': v[9],
-                'generic_id': v[1]
+                'qty': pack_ratio,
+                'cost': price,
+                'generic_id': v.STANDARD_CODE
               });
             }
-            if (this.checkNull(v[1]) && this.checkNull(unit_id)) unitGenerics.push(objUnitGenerics);
-            if (this.checkNull(v[2]) && this.checkNull(unit_id)) {
+            if (this.checkNull(v.STANDARD_CODE) && this.checkNull(unit_id)) unitGenerics.push(objUnitGenerics);
+            if (this.checkNull(v.STANDARD_CODE) && this.checkNull(unit_id)) {
               generics.push(objGenerics);
               expired.push(objExpired);
             }
@@ -381,19 +420,18 @@ export class InvdosComponent implements OnInit {
     if (this.path) {
       await this.modalLoading.show();
       await this.importService.truncateTable(db, ['mm_products']);
+      let results: any = await this.importService.getTempProductDos(db);
       let fileData = await this.convertFile(this.path);
 
       let productData = [];
       for (let i in fileData) {
         const obj = {
           'generic_id': fileData[i][0],
-          'v_labeler_code': fileData[i][5],
+          'v_labeler_code': fileData[i][1],
           'product_name': fileData[i][2],
-          'conversion': fileData[i][3],
-          'cost': fileData[i][4],
-          'm_labeler_code': fileData[i][1],
+          'm_labeler_code': fileData[i][5]
         }
-        if (this.checkNull(fileData[i][3])) productData.push(obj);
+        productData.push(obj);
       }
       let rs = await this.pushProducts(db, productData);
 
@@ -433,11 +471,9 @@ export class InvdosComponent implements OnInit {
         'working_code': v.generic_id + Math.random().toString(6).substr(2, 3),
         'generic_id': v.generic_id,
         'primary_unit_id': primary_unit_id ? primary_unit_id : unitsRs[0].unit_id,
-        // 'tmt_id': v.tmt_id,
         'm_labeler_id': m_labeler_id,
         'v_labeler_id': v_labeler_id
       };
-      // console.log(products)
       if (this.checkNull(v.product_name)) products.push(objProducts);
     }
     return products;

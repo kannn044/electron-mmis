@@ -18,7 +18,46 @@ export class ImportService {
   }
 
   createTmpProductDos(db: IConnection) {
-    const sql = `CREATE TABLE tmp_product_dos (id int NOT NULL AUTO_INCREMENT,c1 varchar(255),c2 varchar(255),c3 varchar(255),c4 varchar(255),c5 varchar(255),c6 varchar(255),c7 varchar(255),c8 varchar(255),c9 varchar(255),c10 varchar(255),c11 varchar(255),c12 varchar(255),PRIMARY KEY(id))`;
+    const sql = `CREATE TABLE tmp_product_dos (
+    id int NOT NULL AUTO_INCREMENT,
+    RECNUM varchar(255),
+    STANDARD_CODE varchar(255),
+    WORKING_CODE varchar(255),
+    DRUG_NAME_KEY varchar(255),
+    DRUG_NAME varchar(255),
+    DOSAGE_FORM varchar(255),
+    SALE_UNIT varchar(255),
+    COMPOSITION varchar(255),
+    GROUP_KEY varchar(255),
+    GROUP_NAME varchar(255),
+    STD_PRICE1 varchar(255),
+    STD_RATIO1 varchar(255),
+    STD_PRICE2 varchar(255),
+    STD_RATIO2 varchar(255),
+    STD_PRICE3 varchar(255),
+    STD_RATIO3 varchar(255),
+    SALE_UNIT_PRICE varchar(255),
+    TOTAL_COST varchar(255),
+    QTY_ON_HAND varchar(255),
+    REORDER_QTY varchar(255),
+    MIN_LEVEL varchar(255),
+    RATE_PER_MONTH varchar(255),
+    PRODUCTION varchar(255),
+    OK varchar(255),
+    TOTAL_VALUE varchar(255),
+    WORK_CODE_KEY varchar(255),
+    MAX_LEVEL varchar(255),
+    SPECIAL_CODE varchar(255),
+    DATE_ENTER varchar(255),
+    GROUP_CODE varchar(255),
+    SUPPLY_TYPE varchar(255),
+    ED_LIST_CODE varchar(255),
+    RESERVE1 varchar(255),
+    RESERVE2 varchar(255),
+    RESERVE3 varchar(255),
+    NOTE varchar(255),
+    LOCATION varchar(255),
+    PRIMARY KEY(id))`;
     db.query(sql, function (error, results, fields) {
       if (error) {
         throw error;
@@ -193,7 +232,7 @@ export class ImportService {
   }
   getTempProductDosages(db: IConnection) {
     return new Promise((resolve, reject) => {
-      db.query(`SELECT * FROM tmp_product_dos GROUP BY c3`, (error: any, results: any) => {
+      db.query(`SELECT DOSAGE_FORM FROM tmp_product_dos GROUP BY DOSAGE_FORM`, (error: any, results: any) => {
         resolve(results);
       });
     });
@@ -207,7 +246,7 @@ export class ImportService {
   }
   getTempProductUnits(db: IConnection) {
     return new Promise((resolve, reject) => {
-      db.query(`SELECT * FROM tmp_product_dos GROUP BY c4`, (error: any, results: any) => {
+      db.query(`SELECT SALE_UNIT FROM tmp_product_dos GROUP BY SALE_UNIT`, (error: any, results: any) => {
         resolve(results);
       });
     });
@@ -400,8 +439,8 @@ export class ImportService {
         JOIN mm_units u ON u.unit_id = mp.primary_unit_id
         LEFT JOIN mm_labelers mlv on mlv.labeler_id = mp.v_labeler_id
         LEFT JOIN mm_labelers mlm on mlm.labeler_id = mp.m_labeler_id`, (error: any, results: any) => {
-        resolve(results);
-      })
+          resolve(results);
+        })
     })
   }
 
