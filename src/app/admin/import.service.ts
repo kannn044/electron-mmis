@@ -87,7 +87,7 @@ export class ImportService {
   }
 
   createTmpProducts(db: IConnection) {
-    const sql = `CREATE TABLE tmp_products (product_id int NOT NULL AUTO_INCREMENT,product_name varchar(255),working_code varchar(255),generic_id varchar(255),primary_unit_id varchar(255),m_labeler_id varchar(255),v_labeler_id varchar(255),remain_qty int(10),warehouse_name varchar(255),tmt_id varchar(255),PRIMARY KEY(product_id),UNIQUE (product_name))`;
+    const sql = `CREATE TABLE tmp_products (product_id int NOT NULL AUTO_INCREMENT,product_name varchar(255),working_code varchar(255),generic_id varchar(255),primary_unit_id varchar(255),m_labeler_id varchar(255),v_labeler_id varchar(255),remain_qty int(10),warehouse_name varchar(255),tmt_id varchar(255),PRIMARY KEY(product_id))`;
     db.query(sql, function (error, results, fields) {
       if (error) {
         throw error;

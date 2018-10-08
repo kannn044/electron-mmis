@@ -34,7 +34,6 @@ export class ConnectionService {
       debug: false,
       acquireConnectionTimeout: 10000
     });
-
   }
 
   getSetting(name: any) {

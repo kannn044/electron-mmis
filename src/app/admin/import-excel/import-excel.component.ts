@@ -378,7 +378,7 @@ export class ImportExcelComponent implements OnInit {
 
           if (v.conversion > 1 && (this.checkNull(v.generic_id))) {
             unitGenerics.push({
-              'from_unit_id': idxPackage,
+              'from_unit_id': package_id,
               'to_unit_id': primary_unit_id,
               'qty': v.conversion,
               'cost': v.package_cost,
