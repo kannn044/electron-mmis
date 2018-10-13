@@ -16,6 +16,7 @@ export class ConnectionService {
   createConnection(name: any) {
 
     const config: any = this.getSetting(name);
+    console.log(config)
     return mysql.createConnection({
       host: config.dbHost,
       user: config.dbUser,

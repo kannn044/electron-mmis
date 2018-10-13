@@ -75,9 +75,6 @@ export class ImportExcelComponent implements OnInit {
       this.modalLoading.show();
       for (let x = 0; x < workSheetsFromFile.length; x++) {
         const excelData = workSheetsFromFile[x].data;
-
-        console.log(excelData);
-
         const arData: any = [];
         const arData1: any = [];
 
@@ -91,7 +88,9 @@ export class ImportExcelComponent implements OnInit {
               'position_name': excelData[y][3]
             };
             y === 1 ? arData.push({ 'title_name': 'นาย', 'fname': 'ผู้ดูแลระบบ', 'lname': '', 'position_name': 'นักวิชาการคอมพิวเตอร์' }) : null;
-            arData.push(obj);
+            if (this.checkNull(excelData[y][1])) {
+              arData.push(obj);
+            }
           }
 
           if (x === 1) {
@@ -108,7 +107,9 @@ export class ImportExcelComponent implements OnInit {
               'labeler_type': excelData[y][9],
               'labeler_status': '1'
             };
-            arData.push(obj);
+            if (this.checkNull(excelData[y][0])) {
+              arData.push(obj);
+            }
           }
 
           if (x === 2) {
@@ -120,7 +121,9 @@ export class ImportExcelComponent implements OnInit {
               'his_hospcode': excelData[y][3],
               'his_dep_code': excelData[y][4],
             };
-            arData.push(obj);
+            if (this.checkNull(excelData[y][1])) {
+              arData.push(obj);
+            }
           }
 
           if (x === 3) {
@@ -134,11 +137,11 @@ export class ImportExcelComponent implements OnInit {
               'package': excelData[y][5],
               'conversion': excelData[y][6],
               'primary_unit_id': excelData[y][7],
-              'standard_cost': excelData[y][8],
-              'unit_cost': excelData[y][9],
-              'package_cost': excelData[y][10],
-              'min_qty': excelData[y][11],
-              'max_qty': excelData[y][12],
+              'standard_cost': excelData[y][8] === undefined ? 0 : excelData[y][8],
+              'unit_cost': excelData[y][9] === undefined ? 0 : excelData[y][9],
+              'package_cost': excelData[y][10] === undefined ? 0 : excelData[y][10],
+              'min_qty': excelData[y][11] === undefined ? 100 : excelData[y][11],
+              'max_qty': excelData[y][12] === undefined ? 1000 : excelData[y][12],
             };
 
             const obj1 = {
@@ -146,10 +149,10 @@ export class ImportExcelComponent implements OnInit {
               'working_code': excelData[y][2],
               'generic_id': excelData[y][2],
               'primary_unit_id': excelData[y][7],
-              'm_labeler_id': excelData[y][13],
-              'v_labeler_id': excelData[y][14],
-              'remain_qty': excelData[y][15],
-              'warehouse_name': excelData[y][16],
+              'm_labeler_id': excelData[y][13] === undefined ? '' : excelData[y][13],
+              'v_labeler_id': excelData[y][14] === undefined ? '' : excelData[y][14],
+              'remain_qty': excelData[y][15] === undefined ? '' : excelData[y][15],
+              'warehouse_name': excelData[y][16] === undefined ? '' : excelData[y][16],
               'tmt_id': excelData[y][17]
             };
             if (excelData[y][0] !== undefined) { arData.push(obj); }
@@ -177,6 +180,7 @@ export class ImportExcelComponent implements OnInit {
             this.rs4 = await this.signGenerics(db, arData, arData1);
           }
         }
+        console.log(arData);
       }
     } else {
       this.alertService.error('กรุณาเลือกไฟล์');
@@ -296,174 +300,178 @@ export class ImportExcelComponent implements OnInit {
     await this.importService.clearDataUnitGenerics(db);
     await this.importService.clearExpiredAlert(db);
 
-    await this.importService.createTmpGenerics(db);
-    await this.importService.createTmpProducts(db);
+    let rsTmpG = await this.importService.createTmpGenerics(db);
+    let rsTmpP = await this.importService.createTmpProducts(db);
 
     const rsg = await this.importService.importGenerics(db, arData);
     const rsp = await this.importService.importProducts(db, arData1);
 
-    if (rsg && rsp) {
-      try {
-        await this.importService.clearDataUnits(db);
-        const unitNames: any = await this.importService.getUnitsTmp(db);
-        const units = [];
-        unitNames.forEach(v => {
-          if (this.checkNull(v.primary_unit_id)) {
-            const objUnits = {
-              'unit_name': v.primary_unit_id,
-              'unit_code': v.primary_unit_id
-            };
-            units.push(objUnits);
-          }
-        });
-
-        const rsUnits: any = await this.importService.importUnits(db, units);
-        if (!rsUnits) { this.alertService.error('ข้อมูลหน่วยเล็กสุดไม่สมบูรณ์'); }
-
-        const tmpGenericRs: any = await this.importService.getTempGenerics(db);
-        const tmpProductRs: any = await this.importService.getTempProducts(db);
-        const AccountRs: any = await this.importService.getGenericAccount(db);
-        const typesRs: any = await this.importService.getGenericType(db);
-        const unitsRs: any = await this.importService.getUnits(db);
-        const labelerRs: any = await this.importService.getLabelers(db);
-
-        const unitGenerics = [];
-        const generics = [];
-        const products = [];
-        const wmProducts = [];
-        const expired = [];
-
-        tmpGenericRs.forEach(v => {
-          const idxUnitGenerics = _.findIndex(unitsRs, { 'unit_name': v.primary_unit_id });
-          const primary_unit_id = idxUnitGenerics > -1 ? unitsRs[idxUnitGenerics].unit_id : null;
-
-          const idxPackage = _.findIndex(unitsRs, { 'unit_name': v.package });
-          const package_id = idxPackage > -1 ? unitsRs[idxUnitGenerics].unit_id : null;
-
-          const idxAccount = _.findIndex(AccountRs, { 'account_name': v.account_id });
-          const account_id = idxAccount > -1 ? AccountRs[idxAccount].account_id : null;
-
-          const idxTypes = _.findIndex(typesRs, { 'generic_type_name': v.generic_type_id });
-          const generic_type_id = idxTypes > -1 ? typesRs[idxTypes].generic_type_id : null;
-
-          const objGenerics = {
-            'generic_id': v.generic_id,
-            'generic_name': v.generic_name,
-            'working_code': v.working_code,
-            'account_id': account_id,
-            'generic_type_id': generic_type_id,
-            'primary_unit_id': primary_unit_id,
-            'standard_cost': v.standard_cost,
-            'unit_cost': v.unit_cost,
-            'min_qty': v.min_qty,
-            'max_qty': v.max_qty
-          };
-
-          const objUnitGenerics = {
-            'from_unit_id': primary_unit_id,
-            'to_unit_id': primary_unit_id,
-            'qty': 1,
-            'cost': v.unit_cost,
-            'generic_id': v.generic_id
-          };
-
-          const objExpired = {
-            'generic_id': v.generic_id,
-            'num_days': 180
-          }
-
-          if (this.checkNull(v.generic_id)) { expired.push(objExpired); }
-          if (this.checkNull(v.generic_id)) { generics.push(objGenerics); }
-          if (this.checkNull(v.generic_id)) { unitGenerics.push(objUnitGenerics); }
-
-          if (v.conversion > 1 && (this.checkNull(v.generic_id))) {
-            unitGenerics.push({
-              'from_unit_id': package_id,
-              'to_unit_id': primary_unit_id,
-              'qty': v.conversion,
-              'cost': v.package_cost,
-              'generic_id': v.generic_id
-            });
-          }
-        });
-
-        for (let v of tmpProductRs) {
-          const idxPrimaryUnit = _.findIndex(unitsRs, { 'unit_name': v.primary_unit_id });
-          const primary_unit_id = idxPrimaryUnit > -1 ? unitsRs[idxPrimaryUnit].unit_id : null;
-
-          const idxMlabeler = _.findIndex(labelerRs, { 'labeler_name': v.m_labeler_id });
-          const m_labeler_id = idxMlabeler > -1 ? labelerRs[idxMlabeler].labeler_id : null;
-
-          const idxVlabeler = _.findIndex(labelerRs, { 'labeler_name': v.v_labeler_id });
-          const v_labeler_id = idxVlabeler > -1 ? labelerRs[idxVlabeler].labeler_id : null;
-
-          let search = await this.importService.searchTempProducts(db, v.working_code);
-
-          let setWorkingcode: any;
-          if (this.checkNull(search)) {
-            if (search[0].count > 1) {
-              setWorkingcode = v.working_code + Math.random().toString(6).substr(2, 3);
+    if (rsTmpG && rsTmpP) {
+      if (rsg && rsp) {
+        try {
+          await this.importService.clearDataUnits(db);
+          const unitNames: any = await this.importService.getUnitsTmp(db);
+          const units = [];
+          unitNames.forEach(v => {
+            if (this.checkNull(v.primary_unit_id)) {
+              const objUnits = {
+                'unit_name': v.primary_unit_id,
+                'unit_code': v.primary_unit_id
+              };
+              units.push(objUnits);
             }
-          }
-          else {
-            setWorkingcode = v.working_code + '001';
-          }
-
-          const objProducts = {
-            'product_id': v.product_id,
-            'product_name': v.product_name,
-            'working_code': setWorkingcode,
-            'generic_id': v.generic_id,
-            'primary_unit_id': primary_unit_id,
-            'tmt_id': v.tmt_id,
-            'm_labeler_id': m_labeler_id,
-            'v_labeler_id': v_labeler_id
-          };
-          if (this.checkNull(v.product_name)) products.push(objProducts);
-        }
-
-        await this.importService.insertExpired(db, expired);
-        const rsGenerics = await this.importService.insertGenerics(db, generics);
-        const rsProducts = await this.importService.insertProducts(db, products);
-        const rsUnitGenerics = await this.importService.insertUnitGenerics(db, unitGenerics);
-
-        if (rsGenerics && rsUnitGenerics && rsProducts) {
-
-          const unitGernericRs: any = await this.importService.getUnitGenericsId(db);
-          const warehousesRS: any = await this.importService.getWarehouses(db);
-
-          tmpProductRs.forEach(v => {
-            const idxWH = _.findIndex(warehousesRS, { 'warehouse_name': v.warehouse_name });
-            const warehouse_id = idxWH > -1 ? warehousesRS[idxWH].warehouse_id : null;
-
-            const idxUnitGenericsId = _.findIndex(unitGernericRs, { 'product_name': v.product_name });
-            const unit_generic_id = idxUnitGenericsId > -1 ? unitGernericRs[idxUnitGenericsId].unit_generic_id : null;
-
-            const objwmProducts = {
-              'wm_product_id': Math.random().toString(20).substr(2, 15),
-              'warehouse_id': warehouse_id,
-              'product_id': v.product_id,
-              'qty': v.remain_qty,
-              'lot_no': Math.random().toString(6).substr(2, 9),
-              'unit_generic_id': unit_generic_id
-            };
-            if (this.checkNull(v.product_name)) { wmProducts.push(objwmProducts); }
           });
 
-          await this.importService.insertWmProducts(db, wmProducts);
-          await this.importService.deleteTempGenerics(db);
-          await this.importService.deleteTempProducts(db);
-          return true;
-        } else {
-          this.alertService.error();
-          this.importService.deleteTempGenerics(db);
-          this.importService.deleteTempProducts(db);
+          const rsUnits: any = await this.importService.importUnits(db, units);
+          if (!rsUnits) { this.alertService.error('ข้อมูลหน่วยเล็กสุดไม่สมบูรณ์'); }
+
+          const tmpGenericRs: any = await this.importService.getTempGenerics(db);
+          const tmpProductRs: any = await this.importService.getTempProducts(db);
+          const AccountRs: any = await this.importService.getGenericAccount(db);
+          const typesRs: any = await this.importService.getGenericType(db);
+          const unitsRs: any = await this.importService.getUnits(db);
+          const labelerRs: any = await this.importService.getLabelers(db);
+
+          const unitGenerics = [];
+          const generics = [];
+          const products = [];
+          const wmProducts = [];
+          const expired = [];
+
+          tmpGenericRs.forEach(v => {
+            const idxUnitGenerics = _.findIndex(unitsRs, { 'unit_name': v.primary_unit_id });
+            const primary_unit_id = idxUnitGenerics > -1 ? unitsRs[idxUnitGenerics].unit_id : null;
+
+            const idxPackage = _.findIndex(unitsRs, { 'unit_name': v.package });
+            const package_id = idxPackage > -1 ? unitsRs[idxUnitGenerics].unit_id : null;
+
+            const idxAccount = _.findIndex(AccountRs, { 'account_name': v.account_id });
+            const account_id = idxAccount > -1 ? AccountRs[idxAccount].account_id : null;
+
+            const idxTypes = _.findIndex(typesRs, { 'generic_type_name': v.generic_type_id });
+            const generic_type_id = idxTypes > -1 ? typesRs[idxTypes].generic_type_id : null;
+
+            const objGenerics = {
+              'generic_id': v.generic_id,
+              'generic_name': v.generic_name,
+              'working_code': v.working_code,
+              'account_id': account_id,
+              'generic_type_id': generic_type_id,
+              'primary_unit_id': primary_unit_id,
+              'standard_cost': v.standard_cost,
+              'unit_cost': v.unit_cost,
+              'min_qty': v.min_qty,
+              'max_qty': v.max_qty
+            };
+
+            const objUnitGenerics = {
+              'from_unit_id': primary_unit_id,
+              'to_unit_id': primary_unit_id,
+              'qty': 1,
+              'cost': v.unit_cost,
+              'generic_id': v.generic_id
+            };
+
+            const objExpired = {
+              'generic_id': v.generic_id,
+              'num_days': 180
+            }
+
+            if (this.checkNull(v.generic_id)) { expired.push(objExpired); }
+            if (this.checkNull(v.generic_id)) { generics.push(objGenerics); }
+            if (this.checkNull(v.generic_id)) { unitGenerics.push(objUnitGenerics); }
+
+            if (v.conversion > 1 && (this.checkNull(v.generic_id))) {
+              unitGenerics.push({
+                'from_unit_id': package_id,
+                'to_unit_id': primary_unit_id,
+                'qty': v.conversion,
+                'cost': v.package_cost,
+                'generic_id': v.generic_id
+              });
+            }
+          });
+
+          for (let v of tmpProductRs) {
+            const idxPrimaryUnit = _.findIndex(unitsRs, { 'unit_name': v.primary_unit_id });
+            const primary_unit_id = idxPrimaryUnit > -1 ? unitsRs[idxPrimaryUnit].unit_id : null;
+
+            const idxMlabeler = _.findIndex(labelerRs, { 'labeler_name': v.m_labeler_id });
+            const m_labeler_id = idxMlabeler > -1 ? labelerRs[idxMlabeler].labeler_id : null;
+
+            const idxVlabeler = _.findIndex(labelerRs, { 'labeler_name': v.v_labeler_id });
+            const v_labeler_id = idxVlabeler > -1 ? labelerRs[idxVlabeler].labeler_id : null;
+
+            let search = await this.importService.searchTempProducts(db, v.working_code);
+
+            let setWorkingcode: any;
+            if (this.checkNull(search)) {
+              if (search[0].count > 1) {
+                setWorkingcode = v.working_code + Math.random().toString(6).substr(2, 3);
+              }
+            }
+            else {
+              setWorkingcode = v.working_code + '001';
+            }
+
+            const objProducts = {
+              'product_id': v.product_id,
+              'product_name': v.product_name,
+              'working_code': setWorkingcode,
+              'generic_id': v.generic_id,
+              'primary_unit_id': primary_unit_id,
+              'tmt_id': v.tmt_id,
+              'm_labeler_id': m_labeler_id,
+              'v_labeler_id': v_labeler_id
+            };
+            if (this.checkNull(v.product_name)) products.push(objProducts);
+          }
+
+          await this.importService.insertExpired(db, expired);
+          const rsGenerics = await this.importService.insertGenerics(db, generics);
+          const rsProducts = await this.importService.insertProducts(db, products);
+          const rsUnitGenerics = await this.importService.insertUnitGenerics(db, unitGenerics);
+
+          if (rsGenerics && rsUnitGenerics && rsProducts) {
+
+            const unitGernericRs: any = await this.importService.getUnitGenericsId(db);
+            const warehousesRS: any = await this.importService.getWarehouses(db);
+
+            tmpProductRs.forEach(v => {
+              const idxWH = _.findIndex(warehousesRS, { 'warehouse_name': v.warehouse_name });
+              const warehouse_id = idxWH > -1 ? warehousesRS[idxWH].warehouse_id : null;
+
+              const idxUnitGenericsId = _.findIndex(unitGernericRs, { 'product_name': v.product_name });
+              const unit_generic_id = idxUnitGenericsId > -1 ? unitGernericRs[idxUnitGenericsId].unit_generic_id : null;
+
+              const objwmProducts = {
+                'wm_product_id': Math.random().toString(20).substr(2, 15),
+                'warehouse_id': warehouse_id,
+                'product_id': v.product_id,
+                'qty': v.remain_qty,
+                'lot_no': Math.random().toString(6).substr(2, 9),
+                'unit_generic_id': unit_generic_id
+              };
+              if (this.checkNull(v.product_name)) { wmProducts.push(objwmProducts); }
+            });
+
+            await this.importService.insertWmProducts(db, wmProducts);
+            await this.importService.deleteTempGenerics(db);
+            await this.importService.deleteTempProducts(db);
+            return true;
+          } else {
+            this.alertService.error();
+            this.importService.deleteTempGenerics(db);
+            this.importService.deleteTempProducts(db);
+            return false;
+          }
+        } catch (error) {
+          this.alertService.error(error.message);
           return false;
         }
-      } catch (error) {
-        this.alertService.error(error.message);
-        return false;
       }
+    } else {
+      this.alertService.error('เกิดข้อผิดพลาด')
     }
   }
 

@@ -48,6 +48,7 @@ export class LoginPageComponent implements OnInit {
       } else {
         let rs: any = JSON.parse(results[0].value);
         this.zone.run(() => {
+          console.log(this.hospitalName)
           this.hospitalName = rs.hospname;
         });
       }

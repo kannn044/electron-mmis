@@ -122,6 +122,8 @@ export class ImportService {
   importGenerics(db: IConnection, data: any) {
     data.forEach(v => {
       const sql = `INSERT INTO tmp_generics SET ?`;
+      console.log(sql, v);
+
       db.query(sql, v, function (error, results, fields) {
         if (error) {
           throw error;
