@@ -1,0 +1,87 @@
+<nav class="breadcrumb">
+  <!-- <a class="breadcrumb-item" href="javascript://" routerLink="/admin">หน้าหลัก</a> -->
+  <span class="breadcrumb-item active">นำเข้าข้อมูลคงคลัง</span>
+</nav>
+<div class="row">
+  <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12" style="padding: 1em">
+    <div class="card">
+      <div style="padding: 1em;">
+        <div class="form-group row">
+          <div class="col-lg-1 col-md-1 col-sm-12 col-xs-12">
+            <label class="required" for="wmRequisition">คลัง</label>
+          </div>
+          <div class="col-lg-3 col-md-3 col-sm-12 col-xs-12">
+            <div class="select">
+              <select name="warehouseSelect" [(ngModel)]="warehouseSelect" (change)="onSelectWarehouses($event);">
+                <option value="">
+                  <กรุณาเลือกคลัง>
+                </option>
+                <option *ngFor="let u of warehouses" [value]="u.warehouse_id">
+                  {{ u.short_code }} - {{ u.warehouse_name }}
+                </option>
+              </select>
+            </div>
+          </div>
+          <div class="col-lg-1 col-md-1 col-sm-12 col-xs-12">
+            <label class="required" for="slWarehouse">ประเภทยา</label>
+          </div>
+          <div class="col-lg-3 col-md-3 col-sm-12 col-xs-12">
+            <div class="select">
+              <select [disabled]="warehouseSelect == ''" name="genericTypeSelect" [(ngModel)]="genericTypeSelect">
+                <option value="">
+                  <กรุณาเลือกประเภทยา>
+                </option>
+                <option *ngFor="let w of genericTypes" [value]="w.generic_type_id">{{ w.generic_type_name }}</option>
+              </select>
+            </div>
+          </div>
+          <div class="col-lg-2 col-md-2 col-sm-12 col-xs-12">
+            <button [disabled]="genericTypeSelect == ''" class="btn btn-success btn-sm " (click)="getGenerics()">
+              <clr-icon shape="search"></clr-icon>
+              เลือก
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- <clr-tab-content id="content1"> -->
+<div class="row">
+  <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
+    <clr-datagrid style="padding-top:1em ;" [clrDgLoading]="loading">
+      <clr-dg-column>ลำดับที่</clr-dg-column>
+      <clr-dg-column>รหัสยา</clr-dg-column>
+      <clr-dg-column>ชื่อยา</clr-dg-column>
+      <clr-dg-column>รหัสสินค้า</clr-dg-column>
+      <clr-dg-column>ชื่อสินค้า</clr-dg-column>
+      <clr-dg-column>หน่วยใหญ่</clr-dg-column>
+      <clr-dg-column>conversion</clr-dg-column>
+      <clr-dg-column>หน่วยเล็ก</clr-dg-column>
+      <!-- <clr-dg-column>แก้ไข</clr-dg-column> -->
+      <clr-dg-placeholder>ไม่พบรายการ</clr-dg-placeholder>
+      <clr-dg-row *clrDgItems="let item of products; let idx = index;" [clrDgItem]="item">
+        <clr-dg-cell>{{pagination.firstItem + idx + 1}}</clr-dg-cell>
+        <clr-dg-cell>{{item.generic_code}}</clr-dg-cell>
+        <clr-dg-cell>{{item.generic_name}}</clr-dg-cell>
+        <clr-dg-cell>{{item.trade_code}}</clr-dg-cell>
+        <clr-dg-cell>{{item.trade_name}}</clr-dg-cell>
+        <clr-dg-cell>{{item.large_unit}}</clr-dg-cell>
+        <clr-dg-cell>{{item.conversion}}</clr-dg-cell>
+        <clr-dg-cell>{{item.small_unit}}</clr-dg-cell>
+        <!-- <clr-dg-cell style="text-align: center">
+            <div class="btn-group btn-sm">
+              <button class="btn btn-outline-primary" (click)="onEditPeople(item)">Edit</button>
+            </div>
+          </clr-dg-cell> -->
+      </clr-dg-row>
+
+      <clr-dg-footer>
+        {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} จาก {{pagination.totalItems}} รายการ
+        <clr-dg-pagination #pagination [clrDgPageSize]="pageSize" ></clr-dg-pagination>
+      </clr-dg-footer>
+    </clr-datagrid>
+  </div>
+</div>
+<!-- </clr-tab-content> -->
+<app-loading-modal #modalLoading></app-loading-modal>

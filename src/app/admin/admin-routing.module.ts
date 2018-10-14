@@ -12,6 +12,7 @@ import { InvcConnectionComponent } from './invc-connection/invc-connection.compo
 import { InvsSyncComponent } from './invs-sync/invs-sync.component';
 import { InvcSyncComponent } from './invc-sync/invc-sync.component';
 import { InvdosComponent } from './invdos/invdos.component';
+import { ImportInventoryComponent } from './import-inventory/import-inventory.component'
 const routes: Routes = [
   {
     path: 'admin',
@@ -26,6 +27,7 @@ const routes: Routes = [
       { path: 'invs-sync', component: InvsSyncComponent },
       { path: 'invc-sync', component: InvcSyncComponent },
       { path: 'invdos', component: InvdosComponent },
+      { path: 'import-inventory', component: ImportInventoryComponent },
       { path: '**', component: PageNotFoundComponent },
     ]
   }
