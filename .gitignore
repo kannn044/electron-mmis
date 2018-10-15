@@ -7,8 +7,9 @@
 package-lock.json
 # dependencies
 /node_modules
-download/*
 
+download/*
+!download/template.xlsx
 # IDEs and editors
 /.idea
 .project
