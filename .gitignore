@@ -7,7 +7,7 @@
 package-lock.json
 # dependencies
 /node_modules
-/download/*
+download/*
 
 # IDEs and editors
 /.idea
