@@ -40,6 +40,10 @@
               <clr-icon shape="search"></clr-icon>
               เลือก
             </button>
+            <button [disabled]="totalItems == 0" class="btn btn-submit btn-sm " (click)="downloadExecl()">
+              <clr-icon shape="download"></clr-icon>
+              download excel
+            </button>
           </div>
         </div>
       </div>

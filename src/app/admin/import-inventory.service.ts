@@ -65,9 +65,11 @@ FROM
     return new Promise((resolve, reject) => {
       db.query(sql, (error: any, results: any) => {
         if(error)reject(error);
+        console.log(results);
+        
         resolve(results);
       });
-      
     });
   }
+
 }
