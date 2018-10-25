@@ -149,11 +149,13 @@ export class ImportExcelComponent implements OnInit {
               'working_code': excelData[y][2],
               'generic_id': excelData[y][2],
               'primary_unit_id': excelData[y][7],
+              'unit_cost': excelData[y][9] === undefined ? 0 : excelData[y][9],
               'm_labeler_id': excelData[y][13] === undefined ? '' : excelData[y][13],
               'v_labeler_id': excelData[y][14] === undefined ? '' : excelData[y][14],
               'remain_qty': excelData[y][15] === undefined ? '' : excelData[y][15],
               'warehouse_name': excelData[y][16] === undefined ? '' : excelData[y][16],
-              'tmt_id': excelData[y][17]
+              'lot_no': excelData[y][17] === undefined ? '' : excelData[y][17],
+              'expired_date': excelData[y][18] === undefined ? '' : excelData[y][18]
             };
             if (excelData[y][0] !== undefined) { arData.push(obj); }
             if (excelData[y][0] !== undefined) { arData1.push(obj1); }
@@ -180,7 +182,6 @@ export class ImportExcelComponent implements OnInit {
             this.rs4 = await this.signGenerics(db, arData, arData1);
           }
         }
-        console.log(arData);
       }
     } else {
       this.alertService.error('กรุณาเลือกไฟล์');
@@ -296,6 +297,7 @@ export class ImportExcelComponent implements OnInit {
   async signGenerics(db: IConnection, arData: any, arData1: any) {
     await this.importService.clearDataGenerics(db);
     await this.importService.clearDataProducts(db);
+    await this.importService.clearDataStockCard(db);
     await this.importService.clearDataWmProducts(db);
     await this.importService.clearDataUnitGenerics(db);
     await this.importService.clearExpiredAlert(db);
@@ -316,7 +318,8 @@ export class ImportExcelComponent implements OnInit {
             if (this.checkNull(v.primary_unit_id)) {
               const objUnits = {
                 'unit_name': v.primary_unit_id,
-                'unit_code': v.primary_unit_id
+                'unit_code': v.primary_unit_id,
+                'is_primary': 'Y'
               };
               units.push(objUnits);
             }
@@ -336,6 +339,7 @@ export class ImportExcelComponent implements OnInit {
           const generics = [];
           const products = [];
           const wmProducts = [];
+          const wmStockCard = [];
           const expired = [];
 
           tmpGenericRs.forEach(v => {
@@ -343,8 +347,7 @@ export class ImportExcelComponent implements OnInit {
             const primary_unit_id = idxUnitGenerics > -1 ? unitsRs[idxUnitGenerics].unit_id : null;
 
             const idxPackage = _.findIndex(unitsRs, { 'unit_name': v.package });
-            const package_id = idxPackage > -1 ? unitsRs[idxUnitGenerics].unit_id : null;
-
+            const package_id = idxPackage > -1 ? unitsRs[idxPackage].unit_id : null;
             const idxAccount = _.findIndex(AccountRs, { 'account_name': v.account_id });
             const account_id = idxAccount > -1 ? AccountRs[idxAccount].account_id : null;
 
@@ -374,13 +377,12 @@ export class ImportExcelComponent implements OnInit {
 
             const objExpired = {
               'generic_id': v.generic_id,
-              'num_days': 180
+              'num_days': 365
             }
 
             if (this.checkNull(v.generic_id)) { expired.push(objExpired); }
             if (this.checkNull(v.generic_id)) { generics.push(objGenerics); }
             if (this.checkNull(v.generic_id)) { unitGenerics.push(objUnitGenerics); }
-
             if (v.conversion > 1 && (this.checkNull(v.generic_id))) {
               unitGenerics.push({
                 'from_unit_id': package_id,
@@ -444,18 +446,41 @@ export class ImportExcelComponent implements OnInit {
               const idxUnitGenericsId = _.findIndex(unitGernericRs, { 'product_name': v.product_name });
               const unit_generic_id = idxUnitGenericsId > -1 ? unitGernericRs[idxUnitGenericsId].unit_generic_id : null;
 
+              const idxGenericsId = _.findIndex(unitGernericRs, { 'product_name': v.product_name });
+              const generic_id = idxGenericsId > -1 ? unitGernericRs[idxGenericsId].generic_id : null;
+
               const objwmProducts = {
                 'wm_product_id': Math.random().toString(20).substr(2, 15),
                 'warehouse_id': warehouse_id,
                 'product_id': v.product_id,
+                'cost': v.unit_cost,
+                'price': v.unit_cost,
                 'qty': v.remain_qty,
-                'lot_no': Math.random().toString(6).substr(2, 9),
+                'lot_no': v.lot_no,
                 'unit_generic_id': unit_generic_id
               };
+
+              const objStockCard = {
+                'product_id': v.product_id,
+                'generic_id': generic_id,
+                'unit_generic_id': unit_generic_id,
+                'transaction_type': 'SUMMIT',
+                'in_qty': v.remain_qty,
+                'in_unit_cost': v.unit_cost,
+                'balance_generic_qty': v.unit_cost,
+                'balance_qty': v.unit_cost,
+                'balance_unit_cost': v.unit_cost,
+                'ref_src': warehouse_id,
+                'comment': 'ยอดยกมาเพื่อเริ่มต้นระบบ MMIS',
+                'lot_no': v.lot_no,
+                'expired_date': v.expired_date
+              }
               if (this.checkNull(v.product_name)) { wmProducts.push(objwmProducts); }
+              if (this.checkNull(v.product_name)) { wmStockCard.push(objStockCard); }
             });
 
             await this.importService.insertWmProducts(db, wmProducts);
+            await this.importService.insertStockCard(db, wmStockCard);
             await this.importService.deleteTempGenerics(db);
             await this.importService.deleteTempProducts(db);
             return true;
@@ -585,7 +610,6 @@ export class ImportExcelComponent implements OnInit {
   async getGeneric() {
     const db: IConnection = this.connectionService.createConnection('config.json');
     this.genericRS = await this.importService.getGeneric(db);
-    console.log(this.genericRS);
   }
 
   checkNull(data: any) {

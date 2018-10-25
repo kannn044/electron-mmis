@@ -3,6 +3,7 @@ import { Component, OnInit, NgZone } from '@angular/core';
 
 import { AlertService } from '../alert.service';
 import { ConnectionService } from '../connection.service';
+import { Router } from '@angular/router'
 
 import * as fse from 'fs-extra';
 import * as path from 'path';
@@ -26,7 +27,8 @@ export class ConnectionComponent implements OnInit {
   constructor(
     private alertService: AlertService,
     private zone: NgZone,
-    private connectionService: ConnectionService
+    private connectionService: ConnectionService,
+    private router: Router,
   ) {
 
   }
@@ -58,6 +60,7 @@ export class ConnectionComponent implements OnInit {
     fse.writeJson(jsonFile, obj)
       .then(() => {
         this.alertService.success();
+        this.router.navigate(['/login']);
       })
       .catch((error: any) => {
         console.log(error);

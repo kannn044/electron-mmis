@@ -87,7 +87,7 @@ export class ImportService {
   }
 
   createTmpProducts(db: IConnection) {
-    const sql = `CREATE TABLE tmp_products (product_id int NOT NULL AUTO_INCREMENT,product_name varchar(255),working_code varchar(255),generic_id varchar(255),primary_unit_id varchar(255),m_labeler_id varchar(255),v_labeler_id varchar(255),remain_qty int(10),warehouse_name varchar(255),tmt_id varchar(255),PRIMARY KEY(product_id))`;
+    const sql = `CREATE TABLE tmp_products (product_id int NOT NULL AUTO_INCREMENT,product_name varchar(255),working_code varchar(255),generic_id varchar(255),primary_unit_id varchar(255),m_labeler_id varchar(255),v_labeler_id varchar(255),remain_qty int(10),warehouse_name varchar(255),tmt_id varchar(255),unit_cost int(10),lot_no varchar(255),expired_date varchar(255),PRIMARY KEY(product_id))`;
     db.query(sql, function (error, results, fields) {
       if (error) {
         throw error;
@@ -122,8 +122,7 @@ export class ImportService {
   importGenerics(db: IConnection, data: any) {
     data.forEach(v => {
       const sql = `INSERT INTO tmp_generics SET ?`;
-      console.log(sql, v);
-
+      
       db.query(sql, v, function (error, results, fields) {
         if (error) {
           throw error;
@@ -336,7 +335,10 @@ export class ImportService {
 
   getUnitsTmp(db: IConnection) {
     return new Promise((resolve, reject) => {
-      db.query(`SELECT primary_unit_id FROM tmp_generics GROUP BY primary_unit_id`, (error: any, results: any) => {
+      db.query(`SELECT primary_unit_id FROM tmp_generics
+      UNION 
+      SELECT package FROM tmp_generics 
+      GROUP BY primary_unit_id`, (error: any, results: any) => {
         resolve(results);
       });
     });
@@ -515,7 +517,7 @@ export class ImportService {
 
   getUnitGenericsId(db: IConnection) {
     return new Promise((resolve, reject) => {
-      db.query(`SELECT mup.unit_generic_id,mp.product_id,mp.product_name,max( mup.qty ) AS max_qty FROM mm_unit_generics mup JOIN mm_products mp ON mp.generic_id = mup.generic_id GROUP BY mp.product_id, mp.product_name`, (error: any, results: any) => {
+      db.query(`SELECT mup.unit_generic_id,mup.generic_id,mp.product_id,mp.product_name,max( mup.qty ) AS max_qty FROM mm_unit_generics mup JOIN mm_products mp ON mp.generic_id = mup.generic_id GROUP BY mp.product_id, mp.product_name`, (error: any, results: any) => {
         resolve(results);
       });
     });
@@ -580,6 +582,18 @@ export class ImportService {
   insertWmProducts(db: IConnection, data: any) {
     data.forEach(v => {
       const sql = `INSERT INTO wm_products SET ?`;
+      db.query(sql, v, function (error, results, fields) {
+        if (error) {
+          throw error;
+        }
+      });
+    });
+    return true;
+  }
+
+  insertStockCard(db: IConnection, data: any) {
+    data.forEach(v => {
+      const sql = `INSERT INTO wm_stock_card SET ?`;
       db.query(sql, v, function (error, results, fields) {
         if (error) {
           throw error;
@@ -732,6 +746,16 @@ export class ImportService {
   clearDataProducts(db: IConnection) {
     return new Promise((resolve, reject) => {
       db.query(`TRUNCATE TABLE mm_products`, (error: any, results: any) => {
+        if (error) {
+          reject(error);
+        } else { resolve(results); }
+      });
+    });
+  }
+
+  clearDataStockCard(db: IConnection) {
+    return new Promise((resolve, reject) => {
+      db.query(`TRUNCATE TABLE wm_stock_card`, (error: any, results: any) => {
         if (error) {
           reject(error);
         } else { resolve(results); }
