@@ -25,7 +25,8 @@ export class AlertService {
       title: title,
       text: text,
       type: 'success',
-      confirmButtonText: 'ตกลง'
+      confirmButtonText: 'ตกลง',
+      timer: 1000
     };
     swal(option);
 
@@ -54,6 +55,6 @@ export class AlertService {
       confirmButtonText: 'ใช่, ดำเนินการ!',
       cancelButtonText: 'ยกเลิก'
     };
-     return swal(option);
+    return swal(option);
   }
 }

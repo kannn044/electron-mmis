@@ -48,6 +48,7 @@ export class LoginPageComponent implements OnInit {
       } else {
         let rs: any = JSON.parse(results[0].value);
         this.zone.run(() => {
+          console.log(this.hospitalName)
           this.hospitalName = rs.hospname;
         });
       }
@@ -70,8 +71,8 @@ export class LoginPageComponent implements OnInit {
     try {
       let rs: any = await this.loginService.doLogin(db, this.username, this.password);
       if (rs.length) {
-        // console.log(rs[0].access_right);
         let _rights = rs[0].access_right;
+        
         if (_rights) {
           let rights = rs[0].access_right.split(',');
           let isAdmin = rights.indexOf('UM_ADMIN');

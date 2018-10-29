@@ -16,10 +16,11 @@ export class LoginService {
       let encPassword = crypto.createHash('md5').update(password).digest('hex');
 
       let sql = `
-      SELECT u.*, p.fname, p.lname
+      SELECT u.*, p.fname, p.lname, uw.access_right
       FROM um_users as u
       INNER JOIN um_people_users as um on um.user_id=u.user_id
       INNER JOIN um_people as p on p.people_id=um.people_id and um.inuse='Y'
+      INNER JOIN um_user_warehouse as uw on uw.user_id = u.user_id
       WHERE u.username=? and u.password=?`;
       db.query(sql, [username, encPassword], (error: any, results: any) => {
         db.end();

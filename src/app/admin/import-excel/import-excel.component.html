@@ -36,7 +36,7 @@
           <clr-dg-column>นามสกุล</clr-dg-column>
           <clr-dg-column>ตำแหน่ง</clr-dg-column>
           <clr-dg-column>แก้ไข</clr-dg-column>
-          <clr-dg-row *clrDgItems="let item of peopleRs" [clrDgItem]="item">
+          <clr-dg-row *ngFor="let item of peopleRs" [clrDgItem]="item">
             <clr-dg-cell>{{item.title_name}}</clr-dg-cell>
             <clr-dg-cell>{{item.fname}}</clr-dg-cell>
             <clr-dg-cell>{{item.lname}}</clr-dg-cell>
@@ -68,7 +68,7 @@
           <clr-dg-column>ที่อยู่</clr-dg-column>
           <clr-dg-column>เบอร์โทร</clr-dg-column>
           <clr-dg-column>แก้ไข</clr-dg-column>
-          <clr-dg-row *clrDgItems="let item of labelersRS" [clrDgItem]="item">
+          <clr-dg-row *ngFor="let item of labelersRS" [clrDgItem]="item">
             <clr-dg-cell>{{item.labeler_name}}</clr-dg-cell>
             <clr-dg-cell>{{item.address}}</clr-dg-cell>
             <clr-dg-cell>{{item.phone}}</clr-dg-cell>
@@ -97,7 +97,7 @@
         <clr-datagrid>
           <clr-dg-column>ชื่อคลัง</clr-dg-column>
           <clr-dg-column>แก้ไข</clr-dg-column>
-          <clr-dg-row *clrDgItems="let item of warehousesRS" [clrDgItem]="item">
+          <clr-dg-row *ngFor="let item of warehousesRS" [clrDgItem]="item">
             <clr-dg-cell>{{item.warehouse_name}}</clr-dg-cell>
             <clr-dg-cell style="text-align: center">
               <div class="btn-group btn-sm">
@@ -132,7 +132,7 @@
           <clr-dg-column>คงคลัง</clr-dg-column>
           <clr-dg-column>คลัง</clr-dg-column>
           <!-- <clr-dg-column>แก้ไข</clr-dg-column> -->
-          <clr-dg-row *clrDgItems="let item of genericRS" [clrDgItem]="item">
+          <clr-dg-row *ngFor="let item of genericRS" [clrDgItem]="item">
             <clr-dg-cell>{{item.generic_name}}</clr-dg-cell>
             <clr-dg-cell>{{item.product_name}}</clr-dg-cell>
             <clr-dg-cell>{{item.large_unit}}</clr-dg-cell>
