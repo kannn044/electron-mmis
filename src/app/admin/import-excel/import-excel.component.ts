@@ -439,7 +439,7 @@ export class ImportExcelComponent implements OnInit {
             const unitGernericRs: any = await this.importService.getUnitGenericsId(db);
             const warehousesRS: any = await this.importService.getWarehouses(db);
 
-            tmpProductRs.forEach(v => {
+            for (const v of tmpProductRs) {
               const idxWH = _.findIndex(warehousesRS, { 'warehouse_name': v.warehouse_name });
               const warehouse_id = idxWH > -1 ? warehousesRS[idxWH].warehouse_id : null;
 
@@ -449,6 +449,20 @@ export class ImportExcelComponent implements OnInit {
               const idxGenericsId = _.findIndex(unitGernericRs, { 'product_name': v.product_name });
               const generic_id = idxGenericsId > -1 ? unitGernericRs[idxGenericsId].generic_id : null;
 
+              const balanceP: any = await this.importService.getBalanceProduct(db, v.product_id, warehouse_id);
+              const balanceG: any = await this.importService.getBalanceGeneric(db, generic_id, warehouse_id);
+              let balanceProduct;
+              let balanceGeneric;
+              if (!balanceP.length) {
+                balanceProduct = 0;
+              } else {
+                balanceProduct = balanceP[0].qty + v.remain_qty;
+              }
+              if (!balanceG.length) {
+                balanceGeneric = 0;
+              } else {
+                balanceGeneric = balanceG[0].qty + v.remain_qty;
+              }
               const objwmProducts = {
                 'wm_product_id': Math.random().toString(20).substr(2, 15),
                 'warehouse_id': warehouse_id,
@@ -467,17 +481,17 @@ export class ImportExcelComponent implements OnInit {
                 'transaction_type': 'SUMMIT',
                 'in_qty': v.remain_qty,
                 'in_unit_cost': v.unit_cost,
-                'balance_generic_qty': v.unit_cost,
-                'balance_qty': v.unit_cost,
+                'balance_generic_qty': balanceGeneric,
+                'balance_qty': balanceProduct,
                 'balance_unit_cost': v.unit_cost,
                 'ref_src': warehouse_id,
                 'comment': 'ยอดยกมาเพื่อเริ่มต้นระบบ MMIS',
                 'lot_no': v.lot_no,
                 'expired_date': v.expired_date
-              }
+              };
               if (this.checkNull(v.product_name)) { wmProducts.push(objwmProducts); }
               if (this.checkNull(v.product_name)) { wmStockCard.push(objStockCard); }
-            });
+            }
 
             await this.importService.insertWmProducts(db, wmProducts);
             await this.importService.insertStockCard(db, wmStockCard);

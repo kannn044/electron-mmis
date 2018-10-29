@@ -408,7 +408,7 @@ export class InvcSyncComponent implements OnInit {
             'generic_id': v.generic_id,
             'primary_unit_id': unitId,
             'm_labeler_id': v.manufac_id,
-            'v_laveler_id': v.vendor_id,
+            'v_labeler_id': v.vendor_id,
             'reg_no': this.checkNull(v.REGIST_NO) ? v.REGIST_NO : null,
             'tmt_id': this.checkNull(v.TMT_CODE) ? v.TMT_CODE : null,
             'std_code': this.checkNull(v.STD_CODE) ? v.STD_CODE : null,
@@ -468,7 +468,7 @@ export class InvcSyncComponent implements OnInit {
           };
           array.push(obj);
         }
-        this.invcService.insert(dbMmis, 'wm_receive_types', array)
+        this.invcService.insert(dbMmis, 'wm_warehouses', array)
           .then(() => {
             resolve();
           })
