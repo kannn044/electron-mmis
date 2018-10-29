@@ -122,7 +122,7 @@ export class ImportService {
   importGenerics(db: IConnection, data: any) {
     data.forEach(v => {
       const sql = `INSERT INTO tmp_generics SET ?`;
-      
+
       db.query(sql, v, function (error, results, fields) {
         if (error) {
           throw error;
@@ -339,8 +339,8 @@ export class ImportService {
       UNION 
       SELECT package FROM tmp_generics 
       GROUP BY primary_unit_id`, (error: any, results: any) => {
-        resolve(results);
-      });
+          resolve(results);
+        });
     });
   }
 
@@ -511,6 +511,35 @@ export class ImportService {
     return new Promise((resolve, reject) => {
       db.query(`SELECT * FROM wm_warehouses`, (error: any, results: any) => {
         resolve(results);
+      });
+    });
+  }
+
+  getBalanceProduct(db: IConnection, productId, warehouseId) {
+    return new Promise((rs, rj) => {
+      const sql = `select sum(qty) as qty from 
+      wm_products wp
+      where wp.warehouse_id = '${warehouseId}'
+      and wp.product_id = '${productId}'
+      group by wp.qty
+      `;
+      db.query(sql, (error: any, results: any) => {
+        rs(results);
+      });
+    });
+  }
+
+  getBalanceGeneric(db: IConnection, genericId, warehouseId) {
+    return new Promise((rs, rj) => {
+      const sql = `select sum(qty) as qty from 
+      wm_products wp
+      join mm_products mp on mp.product = wp.product_id
+      where wp.warehouse_id = '${warehouseId}'
+      and mp.generic_id = '${genericId}'
+      group by wp.qty
+      `;
+      db.query(sql, (error: any, results: any) => {
+        rs(results);
       });
     });
   }
@@ -806,10 +835,10 @@ export class ImportService {
   updatePurchaseUnit(db: IConnection) {
     return new Promise((resolve, reject) => {
       db.query(``, (error: any, results: any) => {
-          if (error) {
-            reject(error);
-          } else { resolve(results); }
-        });
+        if (error) {
+          reject(error);
+        } else { resolve(results); }
+      });
     });
   }
 
