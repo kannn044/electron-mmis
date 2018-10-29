@@ -21,7 +21,8 @@ import { InvcConnectionComponent } from './invc-connection/invc-connection.compo
 import { InvcSyncComponent } from './invc-sync/invc-sync.component';
 import { InvdosComponent } from './invdos/invdos.component';
 import { InvdosService } from './invdos.service';
-
+import { ImportInventoryComponent } from './import-inventory/import-inventory.component';
+import { ImportInventoryService } from "./import-inventory.service";
 @NgModule({
   imports: [
     CommonModule,
@@ -40,14 +41,16 @@ import { InvdosService } from './invdos.service';
     LoadingModalComponent,
     InvdosComponent,
     InvcConnectionComponent,
-    InvcSyncComponent
+    InvcSyncComponent,
+    ImportInventoryComponent
   ],
   providers: [
     MainService,
     AlertService,
     InvsService,
     InvcService,
-    InvdosService
+    InvdosService,
+    ImportInventoryService
   ]
 })
 export class AdminModule { }

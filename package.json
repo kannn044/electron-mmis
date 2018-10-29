@@ -29,6 +29,7 @@
     "encoding": "^0.1.12",
     "fs-extra": "^5.0.0",
     "iconv-lite": "^0.4.23",
+    "json2xls": "^0.1.2",
     "lodash": "^4.17.5",
     "moment": "^2.22.1",
     "mutationobserver-shim": "^0.3.2",
