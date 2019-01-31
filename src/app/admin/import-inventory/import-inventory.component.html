@@ -35,17 +35,26 @@
               </select>
             </div>
           </div>
-          <div class="col-lg-2 col-md-2 col-sm-12 col-xs-12">
-            <button [disabled]="genericTypeSelect == ''" class="btn btn-success btn-sm " (click)="getGenerics()">
+          <div class="col-lg-4 col-md-4 col-sm-12 col-xs-12">
+            <button [disabled]="genericTypeSelect == ''" class="btn btn-success btn-md " (click)="getGenerics()">
               <clr-icon shape="search"></clr-icon>
               เลือก
             </button>
-            <button [disabled]="totalItems == 0" class="btn btn-submit btn-sm " (click)="downloadExecl()">
+            <button [disabled]="totalItems == 0" class="btn btn-submit btn-md " (click)="downloadExecl()">
               <clr-icon shape="download"></clr-icon>
               download excel
             </button>
           </div>
         </div>
+      </div>
+    </div>
+    <div class="card">
+      <div style="padding: 1em;">
+        <img src="../../../assets/pic/excel.svg" height="50" width="50" style="margin-right:1em "> อัพโหลดไฟล์ Excel
+        <button class="btn btn-md" (click)="selectPath()">เลือกไฟล์</button>
+        <input type="text" [(ngModel)]="path" disabled>
+        <button style="float:right;" class="btn btn-success" (click)="importRemain()">Import</button>
+        <!-- <button style="float:right;" class="btn btn-suprimabtn-primary" (click)="refresh()">Refresh</button> -->
       </div>
     </div>
   </div>
@@ -82,9 +91,9 @@
 
       <clr-dg-footer>
         {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} จาก {{pagination.totalItems}} รายการ
-        <clr-dg-pagination #pagination [clrDgPageSize]="pageSize" ></clr-dg-pagination>
+        <clr-dg-pagination #pagination [clrDgPageSize]="pageSize"></clr-dg-pagination>
       </clr-dg-footer>
-    </clr-datagrid>
+    </clr-datagrid> 
   </div>
 </div>
 <!-- </clr-tab-content> -->

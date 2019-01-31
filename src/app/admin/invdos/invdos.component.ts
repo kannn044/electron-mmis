@@ -68,7 +68,9 @@ export class InvdosComponent implements OnInit {
     this.getTrade();
   }
 
-  refresh() {
+  async refresh() {
+    const db: IConnection = this.connectionService.createConnection('config.json');
+    await this.importService.updatePurchaseUnitId(db);
     this.getWarehouses();
     this.getLabeler();
     this.getGeneric();

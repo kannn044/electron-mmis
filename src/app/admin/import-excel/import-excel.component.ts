@@ -1,4 +1,3 @@
-import { browser } from 'protractor';
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { ConnectionService } from '../../connection.service';
 import { IConnection } from 'mysql';
@@ -12,9 +11,6 @@ import xlsx from 'node-xlsx';
 
 import * as _ from 'lodash';
 import * as fs from 'fs';
-import * as fse from 'fs-extra';
-import * as path from 'path';
-import * as os from 'os';
 
 @Component({
   selector: 'app-import-excel',
@@ -58,6 +54,14 @@ export class ImportExcelComponent implements OnInit {
     this.getGeneric();
   }
 
+  async refresh() {
+    const db: IConnection = this.connectionService.createConnection('config.json');
+    this.getpeople();
+    this.getLabelers();
+    this.getWarehouses();
+    this.getGeneric();
+  }
+
   async downloadFile() {
     const db: IConnection = this.connectionService.createConnection('config.json');
     this.importService.deleteTempGenerics(db);
@@ -73,6 +77,8 @@ export class ImportExcelComponent implements OnInit {
     if (this.path) {
       const workSheetsFromFile = xlsx.parse(fs.readFileSync(this.path));
       this.modalLoading.show();
+      this.importService.deleteTempGenerics(db);
+      this.importService.deleteTempProducts(db);
       for (let x = 0; x < workSheetsFromFile.length; x++) {
         const excelData = workSheetsFromFile[x].data;
         const arData: any = [];
@@ -96,15 +102,16 @@ export class ImportExcelComponent implements OnInit {
           if (x === 1) {
             const obj = {
               'labeler_name': excelData[y][0],
-              'description': excelData[y][1],
-              'nin': excelData[y][2],
-              'address': excelData[y][3],
-              'tambon_code': excelData[y][4],
-              'ampur_code': excelData[y][5],
-              'province_code': excelData[y][6],
-              'zipcode': excelData[y][7],
-              'phone': excelData[y][8],
-              'labeler_type': excelData[y][9],
+              'labeler_name_po': excelData[y][1],
+              'description': excelData[y][2],
+              'nin': excelData[y][3],
+              'address': excelData[y][4],
+              'tambon_code': excelData[y][5],
+              'ampur_code': excelData[y][6],
+              'province_code': excelData[y][7],
+              'zipcode': excelData[y][8],
+              'phone': excelData[y][9],
+              'labeler_type': excelData[y][10],
               'labeler_status': '1'
             };
             if (this.checkNull(excelData[y][0])) {
@@ -114,10 +121,9 @@ export class ImportExcelComponent implements OnInit {
 
           if (x === 2) {
             const obj = {
-              'warehouse_id': excelData[y][0],
               'warehouse_name': excelData[y][1],
               'location': excelData[y][2],
-              'short_code': excelData[y][2],
+              'short_code': excelData[y][0],
               'his_hospcode': excelData[y][3],
               'his_dep_code': excelData[y][4],
             };
@@ -152,10 +158,10 @@ export class ImportExcelComponent implements OnInit {
               'unit_cost': excelData[y][9] === undefined ? 0 : excelData[y][9],
               'm_labeler_id': excelData[y][13] === undefined ? '' : excelData[y][13],
               'v_labeler_id': excelData[y][14] === undefined ? '' : excelData[y][14],
-              'remain_qty': excelData[y][15] === undefined ? '' : excelData[y][15],
-              'warehouse_name': excelData[y][16] === undefined ? '' : excelData[y][16],
-              'lot_no': excelData[y][17] === undefined ? '' : excelData[y][17],
-              'expired_date': excelData[y][18] === undefined ? '' : excelData[y][18]
+              // 'remain_qty': excelData[y][15] === undefined ? '' : excelData[y][15],
+              // 'warehouse_name': excelData[y][16] === undefined ? '' : excelData[y][16],
+              // 'lot_no': excelData[y][17] === undefined ? Math.random().toString(10).substr(1, 8) : excelData[y][17],
+              // 'expired_date': excelData[y][18] === undefined ? '' : excelData[y][18]
             };
             if (excelData[y][0] !== undefined) { arData.push(obj); }
             if (excelData[y][0] !== undefined) { arData1.push(obj1); }
@@ -193,6 +199,7 @@ export class ImportExcelComponent implements OnInit {
       await this.getLabelers();
       await this.getWarehouses();
       await this.getGeneric();
+      await this.importService.updatePurchaseUnitId(db);
       await this.modalLoading.hide();
       await this.alertService.success();
     } else {
@@ -200,7 +207,6 @@ export class ImportExcelComponent implements OnInit {
       await this.alertService.error('นำเข้าข้อมูลไม่สำเร็จ โปรดตรวจสอบไฟล์นำเข้า');
     }
     await this.modalLoading.hide();
-    await db.end();
   }
 
   async signLabeler(db: IConnection, arData: any) {
@@ -226,6 +232,7 @@ export class ImportExcelComponent implements OnInit {
 
         const objLabeler = {
           'labeler_name': v.labeler_name,
+          'labeler_name_po': v.labeler_name_po,
           'description': v.description,
           'nin': v.nin,
           'labeler_type': v.labeler_type ? v.labeler_type : 1,
@@ -314,7 +321,7 @@ export class ImportExcelComponent implements OnInit {
           await this.importService.clearDataUnits(db);
           const unitNames: any = await this.importService.getUnitsTmp(db);
           const units = [];
-          unitNames.forEach(v => {
+          for (const v of unitNames) {
             if (this.checkNull(v.primary_unit_id)) {
               const objUnits = {
                 'unit_name': v.primary_unit_id,
@@ -323,7 +330,7 @@ export class ImportExcelComponent implements OnInit {
               };
               units.push(objUnits);
             }
-          });
+          }
 
           const rsUnits: any = await this.importService.importUnits(db, units);
           if (!rsUnits) { this.alertService.error('ข้อมูลหน่วยเล็กสุดไม่สมบูรณ์'); }
@@ -338,8 +345,6 @@ export class ImportExcelComponent implements OnInit {
           const unitGenerics = [];
           const generics = [];
           const products = [];
-          const wmProducts = [];
-          const wmStockCard = [];
           const expired = [];
 
           tmpGenericRs.forEach(v => {
@@ -405,12 +410,9 @@ export class ImportExcelComponent implements OnInit {
             const v_labeler_id = idxVlabeler > -1 ? labelerRs[idxVlabeler].labeler_id : null;
 
             let search = await this.importService.searchTempProducts(db, v.working_code);
-
             let setWorkingcode: any;
             if (this.checkNull(search)) {
-              if (search[0].count > 1) {
-                setWorkingcode = v.working_code + Math.random().toString(6).substr(2, 3);
-              }
+              setWorkingcode = v.working_code + Math.random().toString(6).substr(2, 3);
             }
             else {
               setWorkingcode = v.working_code + '001';
@@ -430,80 +432,79 @@ export class ImportExcelComponent implements OnInit {
           }
 
           await this.importService.insertExpired(db, expired);
-          const rsGenerics = await this.importService.insertGenerics(db, generics);
-          const rsProducts = await this.importService.insertProducts(db, products);
-          const rsUnitGenerics = await this.importService.insertUnitGenerics(db, unitGenerics);
+          await this.importService.insertGenerics(db, generics);
+          await this.importService.insertProducts(db, products);
+          await this.importService.insertUnitGenerics(db, unitGenerics);
 
-          if (rsGenerics && rsUnitGenerics && rsProducts) {
+          // if (rsGenerics && rsUnitGenerics && rsProducts) {
+          // const unitGernericRs: any = await this.importService.getUnitGenericsId(db);
+          // const warehousesRS: any = await this.importService.getWarehouses(db);
 
-            const unitGernericRs: any = await this.importService.getUnitGenericsId(db);
-            const warehousesRS: any = await this.importService.getWarehouses(db);
+          // for (const v of tmpProductRs) {
+          // const idxWH = _.findIndex(warehousesRS, { 'warehouse_name': v.warehouse_name });
+          // const warehouse_id = idxWH > -1 ? warehousesRS[idxWH].warehouse_id : null;
 
-            for (const v of tmpProductRs) {
-              const idxWH = _.findIndex(warehousesRS, { 'warehouse_name': v.warehouse_name });
-              const warehouse_id = idxWH > -1 ? warehousesRS[idxWH].warehouse_id : null;
+          // const idxUnitGenericsId = _.findIndex(unitGernericRs, { 'product_name': v.product_name });
+          // const unit_generic_id = idxUnitGenericsId > -1 ? unitGernericRs[idxUnitGenericsId].unit_generic_id : null;
 
-              const idxUnitGenericsId = _.findIndex(unitGernericRs, { 'product_name': v.product_name });
-              const unit_generic_id = idxUnitGenericsId > -1 ? unitGernericRs[idxUnitGenericsId].unit_generic_id : null;
+          // const idxGenericsId = _.findIndex(unitGernericRs, { 'product_name': v.product_name });
+          // const generic_id = idxGenericsId > -1 ? unitGernericRs[idxGenericsId].generic_id : null;
 
-              const idxGenericsId = _.findIndex(unitGernericRs, { 'product_name': v.product_name });
-              const generic_id = idxGenericsId > -1 ? unitGernericRs[idxGenericsId].generic_id : null;
+          // const balanceP: any = await this.importService.getBalanceProduct(db, v.product_id, warehouse_id);
+          // const balanceG: any = await this.importService.getBalanceGeneric(db, generic_id, warehouse_id);
+          // let balanceProduct;
+          // let balanceGeneric;
+          // if (!balanceP.length) {
+          //   balanceProduct = 0;
+          // } else {
+          //   balanceProduct = balanceP[0].qty + v.remain_qty;
+          // }
+          // if (!balanceG.length) {
+          //   balanceGeneric = 0;
+          // } else {
+          //   balanceGeneric = balanceG[0].qty + v.remain_qty;
+          // }
+          // const objwmProducts = {
+          //   'wm_product_id': Math.random().toString(20).substr(2, 15),
+          //   'warehouse_id': warehouse_id,
+          //   'product_id': v.product_id,
+          //   'cost': v.unit_cost,
+          //   'price': v.unit_cost,
+          //   'qty': v.remain_qty,
+          //   'lot_no': v.lot_no,
+          //   'unit_generic_id': unit_generic_id
+          // };
 
-              const balanceP: any = await this.importService.getBalanceProduct(db, v.product_id, warehouse_id);
-              const balanceG: any = await this.importService.getBalanceGeneric(db, generic_id, warehouse_id);
-              let balanceProduct;
-              let balanceGeneric;
-              if (!balanceP.length) {
-                balanceProduct = 0;
-              } else {
-                balanceProduct = balanceP[0].qty + v.remain_qty;
-              }
-              if (!balanceG.length) {
-                balanceGeneric = 0;
-              } else {
-                balanceGeneric = balanceG[0].qty + v.remain_qty;
-              }
-              const objwmProducts = {
-                'wm_product_id': Math.random().toString(20).substr(2, 15),
-                'warehouse_id': warehouse_id,
-                'product_id': v.product_id,
-                'cost': v.unit_cost,
-                'price': v.unit_cost,
-                'qty': v.remain_qty,
-                'lot_no': v.lot_no,
-                'unit_generic_id': unit_generic_id
-              };
+          // const objStockCard = {
+          //   'product_id': v.product_id,
+          //   'generic_id': generic_id,
+          //   'unit_generic_id': unit_generic_id,
+          //   'transaction_type': 'SUMMIT',
+          //   'in_qty': v.remain_qty,
+          //   'in_unit_cost': v.unit_cost,
+          //   'balance_generic_qty': balanceGeneric,
+          //   'balance_qty': balanceProduct,
+          //   'balance_unit_cost': v.unit_cost,
+          //   'ref_src': warehouse_id,
+          //   'comment': 'ยอดยกมาเพื่อเริ่มต้นระบบ MMIS',
+          //   'lot_no': v.lot_no,
+          //   'expired_date': v.expired_date
+          // };
+          // if (this.checkNull(v.product_name)) { wmProducts.push(objwmProducts); }
+          // if (this.checkNull(v.product_name)) { wmStockCard.push(objStockCard); }
+          // }
 
-              const objStockCard = {
-                'product_id': v.product_id,
-                'generic_id': generic_id,
-                'unit_generic_id': unit_generic_id,
-                'transaction_type': 'SUMMIT',
-                'in_qty': v.remain_qty,
-                'in_unit_cost': v.unit_cost,
-                'balance_generic_qty': balanceGeneric,
-                'balance_qty': balanceProduct,
-                'balance_unit_cost': v.unit_cost,
-                'ref_src': warehouse_id,
-                'comment': 'ยอดยกมาเพื่อเริ่มต้นระบบ MMIS',
-                'lot_no': v.lot_no,
-                'expired_date': v.expired_date
-              };
-              if (this.checkNull(v.product_name)) { wmProducts.push(objwmProducts); }
-              if (this.checkNull(v.product_name)) { wmStockCard.push(objStockCard); }
-            }
-
-            await this.importService.insertWmProducts(db, wmProducts);
-            await this.importService.insertStockCard(db, wmStockCard);
-            await this.importService.deleteTempGenerics(db);
-            await this.importService.deleteTempProducts(db);
-            return true;
-          } else {
-            this.alertService.error();
-            this.importService.deleteTempGenerics(db);
-            this.importService.deleteTempProducts(db);
-            return false;
-          }
+          // await this.importService.insertWmProducts(db, wmProducts);
+          // await this.importService.insertStockCard(db, wmStockCard);
+          await this.importService.deleteTempGenerics(db);
+          await this.importService.deleteTempProducts(db);
+          return true;
+          // } else {
+          //   this.alertService.error();
+          //   this.importService.deleteTempGenerics(db);
+          //   this.importService.deleteTempProducts(db);
+          //   return false;
+          // }
         } catch (error) {
           this.alertService.error(error.message);
           return false;

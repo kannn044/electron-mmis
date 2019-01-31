@@ -3,7 +3,7 @@
     <form class="login">
       <label class="title">
         <h3 class="welcome">Welcome to</h3>
-        {{hospitalName || 'โรงพยาบาลตัวอย่าง'}}
+        {{hospitalName || 'เชื่อมต่อฐานข้อมูลไม่สำเร็จ'}}
       </label>
       <div class="login-group">
         <input class="username" [(ngModel)]="username" (keyup)="enterLogin($event)" type="text" 

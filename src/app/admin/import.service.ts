@@ -87,7 +87,7 @@ export class ImportService {
   }
 
   createTmpProducts(db: IConnection) {
-    const sql = `CREATE TABLE tmp_products (product_id int NOT NULL AUTO_INCREMENT,product_name varchar(255),working_code varchar(255),generic_id varchar(255),primary_unit_id varchar(255),m_labeler_id varchar(255),v_labeler_id varchar(255),remain_qty int(10),warehouse_name varchar(255),tmt_id varchar(255),unit_cost float(10),lot_no varchar(255),expired_date varchar(255),PRIMARY KEY(product_id))`;
+    const sql = `CREATE TABLE tmp_products (product_id int NOT NULL AUTO_INCREMENT,product_name varchar(255),working_code varchar(255),generic_id varchar(255),primary_unit_id varchar(255),m_labeler_id varchar(255),v_labeler_id varchar(255),warehouse_name varchar(255),tmt_id varchar(255),unit_cost float(10),PRIMARY KEY(product_id))`;
     db.query(sql, function (error, results, fields) {
       if (error) {
         throw error;
@@ -97,7 +97,7 @@ export class ImportService {
   }
 
   createTmpLabeler(db: IConnection) {
-    const sql = `CREATE TABLE tmp_labelers (id int NOT NULL AUTO_INCREMENT,labeler_name varchar(255),description varchar(255),nin varchar(255),labeler_type varchar(255),labeler_status varchar(255),address varchar(255),tambon_code varchar(255),ampur_code varchar(255),province_code varchar(255),zipcode varchar(255),phone varchar(255),PRIMARY KEY (id))`;
+    const sql = `CREATE TABLE tmp_labelers (id int NOT NULL AUTO_INCREMENT,labeler_name varchar(255),labeler_name_po varchar(255),description varchar(255),nin varchar(255),labeler_type varchar(255),labeler_status varchar(255),address varchar(255),tambon_code varchar(255),ampur_code varchar(255),province_code varchar(255),zipcode varchar(255),phone varchar(255),PRIMARY KEY (id))`;
 
     db.query(sql, function (error, results, fields) {
       if (error) {
@@ -378,15 +378,11 @@ export class ImportService {
       mus.unit_name AS small_unit,
       mg.unit_cost,
       mug.cost,
-      wp.qty AS remain_qty,
-      ww.warehouse_name,
       mlm.labeler_name AS mlm,
       mlv.labeler_name AS mlv 
     FROM
       mm_products mp
       JOIN mm_generics mg ON mg.generic_id = mp.generic_id
-      JOIN wm_products wp ON wp.product_id = mp.product_id
-      JOIN wm_warehouses ww ON ww.warehouse_id = wp.warehouse_id
       LEFT JOIN mm_generic_types mgt ON mgt.generic_type_id = mg.generic_type_id
       LEFT JOIN mm_generic_accounts mga ON mga.account_id = mg.account_id
       LEFT JOIN mm_unit_generics mug ON mug.generic_id = mg.generic_id
@@ -891,6 +887,22 @@ export class ImportService {
       db.query(`UPDATE wm_warehouses AS ww
       SET ww.warehouse_name = '${warehousesEdit.warehouse_name}'
       WHERE ww.warehouse_id = '${warehousesEdit.warehouse_id}'`, (error: any, results: any) => {
+          if (error) {
+            reject(error);
+          } else { resolve(results); }
+        });
+    });
+  }
+
+  updatePurchaseUnitId(db: IConnection) {
+    return new Promise((resolve, reject) => {
+      db.query(`UPDATE mm_products mp
+      JOIN (
+      SELECT mp.product_id,mug.unit_generic_id,MAX(mug.qty) FROM mm_unit_generics mug
+      JOIN mm_products mp ON mp.generic_id = mug.generic_id
+      GROUP BY mp.product_id
+      ) AS t ON mp.product_id = t.product_id
+      SET mp.purchase_unit_id = t.unit_generic_id`, (error: any, results: any) => {
           if (error) {
             reject(error);
           } else { resolve(results); }

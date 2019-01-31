@@ -18,6 +18,7 @@
         <button class="btn btn-md" (click)="selectPath()">เลือกไฟล์</button>
         <input type="text" [(ngModel)]="path" disabled>
         <button style="float:right;" class="btn btn-success" (click)="importExcel()">Import</button>
+        <button style="float:right;" class="btn btn-suprimabtn-primary" (click)="refresh()">Refresh</button>
       </div>
     </div>
   </div>
@@ -129,8 +130,6 @@
           <clr-dg-column>หน่วยเล็ก</clr-dg-column>
           <clr-dg-column>ราคาต่อหน่วย</clr-dg-column>
           <clr-dg-column>ราคาต่อแพ็ค</clr-dg-column>
-          <clr-dg-column>คงคลัง</clr-dg-column>
-          <clr-dg-column>คลัง</clr-dg-column>
           <!-- <clr-dg-column>แก้ไข</clr-dg-column> -->
           <clr-dg-row *ngFor="let item of genericRS" [clrDgItem]="item">
             <clr-dg-cell>{{item.generic_name}}</clr-dg-cell>
@@ -140,8 +139,6 @@
             <clr-dg-cell>{{item.small_unit}}</clr-dg-cell>
             <clr-dg-cell>{{item.unit_cost}}</clr-dg-cell>
             <clr-dg-cell>{{item.cost}}</clr-dg-cell>
-            <clr-dg-cell>{{item.remain_qty}} ({{item.small_unit}})</clr-dg-cell>
-            <clr-dg-cell>{{item.warehouse_name}}</clr-dg-cell>
             <!-- <clr-dg-cell style="text-align: center">
               <div class="btn-group btn-sm">
                 <button class="btn btn-outline-primary" (click)="onEditGeneric(item)">Edit</button>
