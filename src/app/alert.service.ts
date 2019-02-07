@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-import { default as swal, SweetAlertType, SweetAlertOptions } from 'sweetalert2';
+import { default as swal, SweetAlertOptions } from 'sweetalert2';
 
 @Injectable()
 export class AlertService {

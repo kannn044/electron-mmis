@@ -129,9 +129,12 @@ export class ImportInventoryService {
     return new Promise((rs, rj) => {
       let stock_card_id = data.stock_card_id;
       let product_id = data.product_id;
-      let balance_qty = data.product_qty;
-      let balance_generic_qty = data.generic_qty;
-      let sql = `update wm_stock_card set product_id = ${product_id},balance_qty = ${balance_qty},balance_generic_qty = ${balance_generic_qty} where stock_card_id = ${stock_card_id}`;
+      let balance_qty = data.balance_qty;
+      let balance_generic_qty = data.balance_generic_qty;
+      let balance_lot_qty = data.balance_lot_qty;
+      let sql = `update wm_stock_card set product_id = ${product_id},balance_lot_qty = ${balance_lot_qty},balance_qty = ${balance_qty},balance_generic_qty = ${balance_generic_qty} where stock_card_id = ${stock_card_id}`;
+      console.log(sql);
+      
       db.query(sql, (error: any, results: any) => {
         rs(results);
       });

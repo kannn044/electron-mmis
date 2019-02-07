@@ -6,6 +6,7 @@ import * as _ from 'lodash'
 import { AlertService } from "../../alert.service";
 import * as moment from "moment";
 import xlsx from 'node-xlsx';
+import { v } from '@angular/core/src/render3';
 const path = require('path')
 const fs = require('fs');
 const json2xls = require('json2xls');
@@ -150,6 +151,7 @@ export class ImportInventoryComponent implements OnInit {
           let arData: any = [];
           for (let x = 0; x < 1; x++) {
             const excelData = workSheetsFromFile[x].data;
+
             for (let y = 1; y < excelData.length; y++) {
               const data = {
                 wm_product_id: Math.random().toString(15).substr(2, 12),
@@ -202,6 +204,7 @@ export class ImportInventoryComponent implements OnInit {
         'transaction_type': 'SUMMIT',
         'in_qty': v.qty,
         'in_unit_cost': v.price,
+        'balance_lot_qty': 0,
         'balance_generic_qty': 0,
         'balance_qty': 0,
         'balance_unit_cost': v.price,
@@ -210,20 +213,17 @@ export class ImportInventoryComponent implements OnInit {
         'lot_no': v.lodash,
         'expired_date': v.expired_date
       };
-
       arDatas.push(objStockCard);
     }
 
     let wmRss = await this.importInventoryService.insertStockCard(this.db, arDatas);
-
     if (wmRss) {
-      let generics = await this.importInventoryService.adjustStock1(this.db, this.warehouseSelect);
-      for (const g of generics[0]) {
-        console.log(g)
+      let generics: any = await this.importInventoryService.adjustStock1(this.db, this.warehouseSelect);
+      for (const g of generics) {
         let product: any = [];
-        let products = await this.importInventoryService.adjustStock2(this.db, g.generic_id, this.warehouseSelect); // รายการทั้งหทก
-        let productId = await this.importInventoryService.adjustStock3(this.db, g.generic_id, this.warehouseSelect); //product id
-        for (const pd of productId[0]) {
+        let products: any = await this.importInventoryService.adjustStock2(this.db, g.generic_id, this.warehouseSelect); // รายการทั้งหทก
+        let productId: any = await this.importInventoryService.adjustStock3(this.db, g.generic_id, this.warehouseSelect); //product id
+        for (const pd of productId) {
           const obj: any = {
             generic_id: g.generic_id,
             product_id: pd.product_id,
@@ -232,7 +232,7 @@ export class ImportInventoryComponent implements OnInit {
           }
           product.push(obj);
         }
-        for (const pd of products[0]) {
+        for (const pd of products) {
           const idxG = _.findIndex(product, { generic_id: g.generic_id });
           if (idxG > -1) {
             product[idxG].generic_qty += +pd.in_qty;
@@ -245,10 +245,11 @@ export class ImportInventoryComponent implements OnInit {
             const obj: any = {
               stock_card_id: pd.stock_card_id,
               product_id: pd.product_id,
+              balance_lot_qty: product[idx].product_qty,
               balance_qty: product[idx].product_qty,
               balance_generic_qty: product[idxG].generic_qty
             }
-            if (pd.balance_qty != obj.balance_qty || pd.balance_generic_qty != obj.balance_generic_qty) {
+            if (pd.balance_lot_qty != obj.balance_lot_qty || pd.balance_qty != obj.balance_qty || pd.balance_generic_qty != obj.balance_generic_qty) {
               await this.importInventoryService.adjustStockUpdate(this.db, obj);
             }
           }
