@@ -165,11 +165,11 @@ export class InvdosComponent implements OnInit {
       let labelerData = [];
       for (let i in fileData) {
         const obj = {
-          'labeler_name': fileData[i][3] + fileData[i][4] + fileData[i][5],
-          'labeler_code': fileData[i][0],
-          'is_vendor': fileData[i][1] ? 'Y' : 'N',
-          'is_manufacturer': fileData[i][2] ? 'Y' : 'N',
-          'phone': fileData[i][10]
+          'labeler_name': fileData[i][4],
+          'labeler_code': fileData[i][1],
+          'is_vendor': fileData[i][2] === 'V' ? 'Y' : 'N',
+          'is_manufacturer': fileData[i][3] === 'M' ? 'Y' : 'N',
+          'phone': fileData[i][8]
         }
         if (this.checkNull(fileData[i][4])) labelerData.push(obj);
       }
